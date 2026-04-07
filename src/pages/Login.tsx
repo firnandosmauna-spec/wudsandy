@@ -144,7 +144,7 @@ export default function Login() {
         </div>
 
         <p className="mt-6 text-center text-xs text-muted-foreground">
-          Aplikasi POS Kasir Modern © 2025
+          Aplikasi POS Kasir Modern © 2026 • v1.1.2
         </p>
       </div>
     </div>
