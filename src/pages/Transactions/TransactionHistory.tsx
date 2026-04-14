@@ -179,7 +179,7 @@ export default function TransactionHistory() {
     const data = filteredTransactions.map(t => ({
       'Tanggal': format(new Date(t.created_at), 'dd/MM/yyyy HH:mm'),
       'ID Transaksi': t.id.substring(0, 8).toUpperCase(),
-      'Produk': (t.transaction_items || []).map((i: any) => `${i.products?.name} (${i.quantity})`).join(', '),
+      'Produk': (t.transaction_items || []).map((i: any) => `${i.product_name || i.products?.name || 'Produk'} (${i.quantity})`).join(', '),
       'Metode Bayar': t.payment_method,
       'Kasir': getCashierName(t),
       'Pelanggan': t.customers?.name || 'Guest',
@@ -376,7 +376,7 @@ export default function TransactionHistory() {
                       {(t.transaction_items || []).map((item: any, idx: number) => (
                         <div key={idx} className="text-[10px] font-bold leading-tight flex items-center gap-1">
                           <span className="h-1 w-1 rounded-full bg-primary" />
-                          <span className="text-foreground truncate">{item.products?.name}</span>
+                          <span className="text-foreground truncate">{item.product_name || item.products?.name || 'Produk'}</span>
                           <span className="text-muted-foreground ml-auto">x{item.quantity}</span>
                         </div>
                       ))}
@@ -468,7 +468,7 @@ export default function TransactionHistory() {
                         ) : items?.filter((item: any) => item.products?.category_id !== COFFEE_POWDER_CATEGORY_ID).map((item: any) => (
                             <div key={item.id} className="flex justify-between items-center p-3 hover:bg-muted/50 transition-colors border-b border-border last:border-0">
                                 <div>
-                                    <p className="font-bold text-sm">{item.products?.name || 'Produk'}</p>
+                                    <p className="font-bold text-sm">{item.product_name || item.products?.name || 'Produk'}</p>
                                     <p className="text-[10px] text-muted-foreground">{item.quantity} x Rp {Number(item.price).toLocaleString('id-ID')}</p>
                                 </div>
                                 <p className="font-black text-sm">Rp {(item.quantity * Number(item.price)).toLocaleString('id-ID')}</p>
@@ -550,7 +550,7 @@ export default function TransactionHistory() {
                     <td className="py-4 px-2 uppercase">{t.id.substring(0, 8)}</td>
                     <td className="py-4 px-2">
                        {(t.transaction_items || []).map((item: any, idx: number) => (
-                        <div key={idx} className="whitespace-nowrap">{item.products?.name} (x{item.quantity})</div>
+                        <div key={idx} className="whitespace-nowrap">{item.product_name || item.products?.name || 'Produk'} (x{item.quantity})</div>
                       ))}
                     </td>
                     <td className="py-4 px-2">{getCashierName(t)}</td>

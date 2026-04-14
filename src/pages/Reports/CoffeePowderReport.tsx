@@ -247,7 +247,7 @@ export default function CoffeePowderReport() {
 
   const filteredItems = useMemo(() => {
     return coffeeSales.filter((item: any) => 
-      item.products?.name.toLowerCase().includes(search.toLowerCase()) ||
+      (item.product_name || item.products?.name || '').toLowerCase().includes(search.toLowerCase()) ||
       item.transaction_id.toLowerCase().includes(search.toLowerCase())
     );
   }, [coffeeSales, search]);
@@ -269,7 +269,7 @@ export default function CoffeePowderReport() {
     if (filteredItems.length === 0) return;
     const data = filteredItems.map((item: any) => ({
       'Tanggal': format(new Date(item.transactions.created_at), 'dd/MM/yyyy HH:mm'),
-      'Nama Produk': item.products?.name,
+      'Nama Produk': item.product_name || item.products?.name || 'Produk',
       'Qty': item.quantity,
       'Harga Satuan': item.price,
       'Subtotal': item.quantity * item.price,
@@ -508,7 +508,7 @@ export default function CoffeePowderReport() {
                                   {format(new Date(item.transactions.created_at), 'HH:mm')} • {item.transaction_id.substring(0, 8).toUpperCase()}
                               </div>
                           </TableCell>
-                          <TableCell className="font-black text-foreground">{item.products?.name}</TableCell>
+                          <TableCell className="font-black text-foreground">{item.product_name || item.products?.name || 'Produk'}</TableCell>
                           <TableCell className="text-center font-bold text-foreground">{item.quantity}</TableCell>
                           <TableCell className="text-right font-medium text-muted-foreground">Rp {item.price.toLocaleString('id-ID')}</TableCell>
                           <TableCell className="text-right px-6 font-black text-primary">Rp {(item.quantity * item.price).toLocaleString('id-ID')}</TableCell>
@@ -554,7 +554,7 @@ export default function CoffeePowderReport() {
             <div className="space-y-4 py-4">
               <div className="bg-blue-50 p-4 rounded-2xl border border-blue-100">
                 <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest mb-1">Nama Produk</p>
-                <p className="text-sm font-bold text-blue-900">{editingItem.products?.name}</p>
+                <p className="text-sm font-bold text-blue-900">{editingItem.product_name || editingItem.products?.name || 'Produk'}</p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -647,7 +647,7 @@ export default function CoffeePowderReport() {
                 {filteredItems.map((item: any) => (
                    <tr key={item.id} className="border-b border-gray-100">
                       <td className="py-4">{format(new Date(item.transactions.created_at), 'dd/MM/yy HH:mm')}</td>
-                      <td className="py-4 uppercase">{item.products?.name}</td>
+                      <td className="py-4 uppercase">{item.product_name || item.products?.name || 'Produk'}</td>
                       <td className="py-4 text-center">{item.quantity}</td>
                       <td className="py-4 text-right">Rp {(item.quantity * item.price).toLocaleString('id-ID')}</td>
                    </tr>

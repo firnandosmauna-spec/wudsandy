@@ -318,7 +318,7 @@ export default function SalesReport() {
       'ID Transaksi': (t.receipt_number || t.id.substring(0, 8)).toUpperCase(),
       'Metode Bayar': t.payment_method,
       'Kasir': getCashierName(t),
-      'Produk': (t.transaction_items || []).map((i: any) => `${i.products?.name} (${i.quantity})`).join(', '),
+      'Produk': (t.transaction_items || []).map((i: any) => `${i.product_name || i.products?.name || 'Produk'} (${i.quantity})`).join(', '),
       'Total (Rp)': t.adjustedTotal
     }));
 
@@ -612,7 +612,7 @@ export default function SalesReport() {
                       {(t.transaction_items || []).map((item: any, idx: number) => (
                         <div key={idx} className="text-[10px] font-bold leading-tight flex items-center gap-1">
                           <span className="h-1 w-1 rounded-full bg-primary" />
-                          <span className="text-foreground truncate">{item.products?.name}</span>
+                          <span className="text-foreground truncate">{item.product_name || item.products?.name || 'Produk'}</span>
                           <span className="text-muted-foreground ml-auto">x{item.quantity}</span>
                         </div>
                       ))}
@@ -835,7 +835,7 @@ export default function SalesReport() {
                         {transactionItems.map((item: any) => (
                             <div key={item.id} className="flex justify-between items-center bg-muted/30 p-3 rounded-2xl">
                                 <div>
-                                    <p className="text-sm font-bold text-foreground">{item.products?.name}</p>
+                                    <p className="text-sm font-bold text-foreground">{item.product_name || item.products?.name || 'Produk'}</p>
                                     <p className="text-[10px] text-muted-foreground">{item.quantity}x @ Rp {Number(item.price).toLocaleString('id-ID')}</p>
                                 </div>
                                 <p className="font-black text-sm text-foreground">Rp {(item.quantity * item.price).toLocaleString('id-ID')}</p>
@@ -921,7 +921,7 @@ export default function SalesReport() {
                     <td className="py-4 px-2 text-center uppercase tracking-wider text-[8px]">{t.payment_method}</td>
                     <td className="py-4 px-2 text-[9px]">
                       {(t.transaction_items || []).map((item: any, idx: number) => (
-                        <div key={idx}>{item.products?.name} (x{item.quantity})</div>
+                        <div key={idx}>{item.product_name || item.products?.name || 'Produk'} (x{item.quantity})</div>
                       ))}
                     </td>
                     <td className="py-4 px-2 text-center">{getCashierName(t)}</td>
