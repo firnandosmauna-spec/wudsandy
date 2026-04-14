@@ -60,6 +60,7 @@ export default function TransactionHistory() {
   const [search, setSearch] = useState('');
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [showManualOnly, setShowManualOnly] = useState(false);
   const { data: config } = useStoreConfig();
   const storeName = config?.store_name || 'WUDkopi';
   const printRef = useRef<HTMLDivElement>(null);
@@ -126,13 +127,18 @@ export default function TransactionHistory() {
     }).filter(t => t.adjustedTotal > 0) || [];
   }, [transactions]);
 
-  const filteredTransactions = processedTransactions.filter(t => 
-    t.id.toLowerCase().includes(search.toLowerCase()) ||
-    (t.receipt_number && t.receipt_number.toLowerCase().includes(search.toLowerCase())) ||
-    t.payment_method.toLowerCase().includes(search.toLowerCase()) ||
-    t.profiles?.full_name?.toLowerCase().includes(search.toLowerCase()) ||
-    t.customers?.name?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredTransactions = processedTransactions.filter(t => {
+    const matchesSearch = t.id.toLowerCase().includes(search.toLowerCase()) ||
+      (t.receipt_number && t.receipt_number.toLowerCase().includes(search.toLowerCase())) ||
+      t.payment_method.toLowerCase().includes(search.toLowerCase()) ||
+      t.profiles?.full_name?.toLowerCase().includes(search.toLowerCase()) ||
+      t.customers?.name?.toLowerCase().includes(search.toLowerCase());
+    
+    const hasManualItems = (t.transaction_items || []).some((item: any) => !item.product_id);
+    const matchesManualFilter = !showManualOnly || hasManualItems;
+
+    return matchesSearch && matchesManualFilter;
+  });
 
   const getPaymentIcon = (method: string) => {
     if (method.toLowerCase().includes('tunai')) return <Banknote className="h-4 w-4 text-emerald-500" />;
@@ -179,7 +185,7 @@ export default function TransactionHistory() {
     const data = filteredTransactions.map(t => ({
       'Tanggal': format(new Date(t.created_at), 'dd/MM/yyyy HH:mm'),
       'ID Transaksi': t.id.substring(0, 8).toUpperCase(),
-      'Produk': (t.transaction_items || []).map((i: any) => `${i.product_name || i.products?.name || 'Produk'} (${i.quantity})`).join(', '),
+      'Produk': (t.transaction_items || []).map((i: any) => `${i.product_name || i.products?.name || 'Produk'}${!i.product_id ? ' (Manual)' : ''} (${i.quantity})`).join(', '),
       'Metode Bayar': t.payment_method,
       'Kasir': getCashierName(t),
       'Pelanggan': t.customers?.name || 'Guest',
@@ -323,14 +329,27 @@ export default function TransactionHistory() {
           </div>
         </div>
 
-        <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <Input 
-            placeholder="Cari transaksi berdasarkan ID, nama kasir, pelanggan, atau metode..." 
-            className="pl-12 bg-secondary/50 border-border rounded-2xl h-12 text-sm"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input 
+              placeholder="Cari transaksi berdasarkan ID, nama kasir, pelanggan, atau metode..." 
+              className="pl-12 bg-secondary/50 border-border rounded-2xl h-12 text-sm"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <Button
+            variant={showManualOnly ? "default" : "outline"}
+            onClick={() => setShowManualOnly(!showManualOnly)}
+            className={cn(
+              "rounded-2xl h-12 px-6 font-bold flex items-center gap-2 transition-all",
+              showManualOnly ? "gradient-primary text-white shadow-lg" : "bg-secondary/50 border-border text-muted-foreground hover:bg-secondary"
+            )}
+          >
+            <Navigation className={cn("h-4 w-4", showManualOnly && "animate-pulse")} />
+            {showManualOnly ? "MENAMPILKAN MANUAL" : "FILTER MANUAL"}
+          </Button>
         </div>
       </div>
 
@@ -377,6 +396,9 @@ export default function TransactionHistory() {
                         <div key={idx} className="text-[10px] font-bold leading-tight flex items-center gap-1">
                           <span className="h-1 w-1 rounded-full bg-primary" />
                           <span className="text-foreground truncate">{item.product_name || item.products?.name || 'Produk'}</span>
+                          {!item.product_id && (
+                            <span className="bg-purple-500/10 text-purple-600 px-1 rounded-[4px] text-[8px] font-black uppercase tracking-tighter ml-1">MANUAL</span>
+                          )}
                           <span className="text-muted-foreground ml-auto">x{item.quantity}</span>
                         </div>
                       ))}
@@ -468,7 +490,12 @@ export default function TransactionHistory() {
                         ) : items?.filter((item: any) => item.products?.category_id !== COFFEE_POWDER_CATEGORY_ID).map((item: any) => (
                             <div key={item.id} className="flex justify-between items-center p-3 hover:bg-muted/50 transition-colors border-b border-border last:border-0">
                                 <div>
-                                    <p className="font-bold text-sm">{item.product_name || item.products?.name || 'Produk'}</p>
+                                    <div className="flex items-center gap-2">
+                                        <p className="font-bold text-sm">{item.product_name || item.products?.name || 'Produk'}</p>
+                                        {!item.product_id && (
+                                            <span className="bg-purple-500/10 text-purple-600 px-1.5 py-0.5 rounded-lg text-[8px] font-black uppercase">MANUAL</span>
+                                        )}
+                                    </div>
                                     <p className="text-[10px] text-muted-foreground">{item.quantity} x Rp {Number(item.price).toLocaleString('id-ID')}</p>
                                 </div>
                                 <p className="font-black text-sm">Rp {(item.quantity * Number(item.price)).toLocaleString('id-ID')}</p>

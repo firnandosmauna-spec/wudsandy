@@ -87,6 +87,7 @@ export default function SalesReport() {
   const [paymentFilter, setPaymentFilter] = useState<string>('all');
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const [showManualOnly, setShowManualOnly] = useState(false);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -270,9 +271,12 @@ export default function SalesReport() {
                             (paymentFilter === 'tunai' && isTunai) ||
                             (paymentFilter === 'nontunai' && !isTunai);
       
-      return matchesSearch && matchesPayment;
+      const hasManualItems = (t.transaction_items || []).some((item: any) => !item.product_id);
+      const matchesManualFilter = !showManualOnly || hasManualItems;
+
+      return matchesSearch && matchesPayment && matchesManualFilter;
     });
-  }, [processedTransactions, search, paymentFilter]);
+  }, [processedTransactions, search, paymentFilter, showManualOnly]);
 
   const totalSales = useMemo(() => {
     return filteredTransactions.reduce((sum, t) => sum + t.adjustedTotal, 0);
@@ -551,14 +555,27 @@ export default function SalesReport() {
           </div>
         </div>
 
-        <div className="relative">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-          <Input 
-            placeholder="Cari transaksi berdasarkan ID atau metode pembayaran..." 
-            className="pl-12 bg-secondary/50 border-border rounded-2xl h-12 text-sm"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input 
+              placeholder="Cari transaksi berdasarkan ID atau metode pembayaran..." 
+              className="pl-12 bg-secondary/50 border-border rounded-2xl h-12 text-sm"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+          <Button
+            variant={showManualOnly ? "default" : "outline"}
+            onClick={() => setShowManualOnly(!showManualOnly)}
+            className={cn(
+              "rounded-2xl h-12 px-6 font-bold flex items-center gap-2 transition-all",
+              showManualOnly ? "gradient-primary text-white shadow-lg" : "bg-secondary/50 border-border text-muted-foreground hover:bg-secondary"
+            )}
+          >
+            <Filter className={cn("h-4 w-4", showManualOnly && "animate-pulse")} />
+            {showManualOnly ? "MENAMPILKAN MANUAL" : "FILTER MANUAL"}
+          </Button>
         </div>
       </div>
 
@@ -613,6 +630,9 @@ export default function SalesReport() {
                         <div key={idx} className="text-[10px] font-bold leading-tight flex items-center gap-1">
                           <span className="h-1 w-1 rounded-full bg-primary" />
                           <span className="text-foreground truncate">{item.product_name || item.products?.name || 'Produk'}</span>
+                          {!item.product_id && (
+                              <span className="bg-purple-500/10 text-purple-600 px-1 rounded-[4px] text-[8px] font-black uppercase tracking-tighter ml-1">MANUAL</span>
+                          )}
                           <span className="text-muted-foreground ml-auto">x{item.quantity}</span>
                         </div>
                       ))}
@@ -835,7 +855,12 @@ export default function SalesReport() {
                         {transactionItems.map((item: any) => (
                             <div key={item.id} className="flex justify-between items-center bg-muted/30 p-3 rounded-2xl">
                                 <div>
-                                    <p className="text-sm font-bold text-foreground">{item.product_name || item.products?.name || 'Produk'}</p>
+                                    <div className="flex items-center gap-2">
+                                        <p className="text-sm font-bold text-foreground">{item.product_name || item.products?.name || 'Produk'}</p>
+                                        {!item.product_id && (
+                                            <span className="bg-purple-500/10 text-purple-600 px-1.5 py-0.5 rounded-lg text-[8px] font-black uppercase">MANUAL</span>
+                                        )}
+                                    </div>
                                     <p className="text-[10px] text-muted-foreground">{item.quantity}x @ Rp {Number(item.price).toLocaleString('id-ID')}</p>
                                 </div>
                                 <p className="font-black text-sm text-foreground">Rp {(item.quantity * item.price).toLocaleString('id-ID')}</p>
