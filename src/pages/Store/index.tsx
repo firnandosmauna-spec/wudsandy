@@ -36,11 +36,19 @@ import {
   MessageSquare,
   Upload,
   X,
-  Image as ImageIcon
+  Image as ImageIcon,
+  Hash
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function StoreManagement() {
   const [activeTab, setActiveTab] = useState('identity');
@@ -79,6 +87,8 @@ export default function StoreManagement() {
           open_time: '08:00',
           close_time: '22:00',
           footer_message: 'Terima kasih atas kunjungan Anda!',
+          transaction_id_mode: 'auto',
+          transaction_prefix: 'TRX',
           settings: { showTable: true, showRecall: true, showGuest: true, showManual: true }
       };
     }
@@ -358,6 +368,56 @@ export default function StoreManagement() {
                           className="bg-secondary/50 rounded-xl border-border"
                         />
                       </div>
+                    </>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card className="border-border bg-card/50 rounded-3xl overflow-hidden shadow-sm">
+                <CardHeader className="bg-blue-600/5 pb-6">
+                  <CardTitle className="text-lg flex items-center gap-2">
+                    <Hash className="h-5 w-5 text-blue-600" /> Pengaturan Nomor Transaksi (ID)
+                  </CardTitle>
+                  <CardDescription>Atur bagaimana nomor struk/transaksi dibuat.</CardDescription>
+                </CardHeader>
+                <CardContent className="pt-6 space-y-4">
+                  {!storeConfig ? <Loader2 className="animate-spin" /> : (
+                    <>
+                      <div className="space-y-2">
+                        <Label>Mode Penomoran</Label>
+                        <Select 
+                          value={storeConfig.transaction_id_mode || 'auto'} 
+                          onValueChange={(val) => setStoreConfig({...storeConfig, transaction_id_mode: val})}
+                        >
+                          <SelectTrigger className="bg-secondary/50 rounded-xl border-border">
+                            <SelectValue placeholder="Pilih Mode" />
+                          </SelectTrigger>
+                          <SelectContent className="rounded-xl border-border">
+                            <SelectItem value="auto" className="font-bold">Otomatis (Sistem)</SelectItem>
+                            <SelectItem value="manual" className="font-bold">Manual (Input Kasir)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <p className="text-[10px] text-muted-foreground uppercase font-bold px-1">
+                          {storeConfig.transaction_id_mode === 'manual' 
+                            ? "* KASIR WAJIB INPUT NOMOR STRUK SAAT PEMBAYARAN" 
+                            : "* SISTEM AKAN GENERATE NOMOR STRUK OTOMATIS"}
+                        </p>
+                      </div>
+
+                      {storeConfig.transaction_id_mode !== 'manual' && (
+                        <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
+                          <Label>Prefix ID Transaksi (Otomatis)</Label>
+                          <Input 
+                            value={storeConfig.transaction_prefix || 'TRX'} 
+                            onChange={(e) => setStoreConfig({...storeConfig, transaction_prefix: e.target.value.toUpperCase()})}
+                            placeholder="Contoh: TRX, INV, WUD"
+                            className="bg-secondary/50 rounded-xl border-border font-mono font-bold"
+                          />
+                          <p className="text-[10px] text-muted-foreground">
+                            Contoh ID: <span className="text-foreground font-bold font-mono">{storeConfig.transaction_prefix || 'TRX'}-20240101-ABCD</span>
+                          </p>
+                        </div>
+                      )}
                     </>
                   )}
                 </CardContent>

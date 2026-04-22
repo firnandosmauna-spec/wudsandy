@@ -228,6 +228,7 @@ export default function PurchaseReport() {
       'Supplier': p.supplier_name || 'Umum',
       'Invoice': p.invoice_number || '-',
       'Perekam': p.profiles?.full_name || 'System',
+      'Keterangan': p.description || '-',
       'Total (Rp)': Number(p.total_amount)
     }));
     const ws = XLSX.utils.json_to_sheet(data);
@@ -335,6 +336,7 @@ export default function PurchaseReport() {
                       <TableHead className="py-5 px-6 font-black uppercase text-[10px] tracking-widest text-muted-foreground">Tgl Beli</TableHead>
                       <TableHead className="font-black uppercase text-[10px] tracking-widest text-muted-foreground">Supplier</TableHead>
                       <TableHead className="font-black uppercase text-[10px] tracking-widest text-muted-foreground">Invoice</TableHead>
+                      <TableHead className="font-black uppercase text-[10px] tracking-widest text-muted-foreground">Keterangan</TableHead>
                       <TableHead className="font-black uppercase text-[10px] tracking-widest text-muted-foreground text-right px-6">Total Nilai</TableHead>
                       <TableHead className="text-right px-6">Aksi</TableHead>
                   </TableRow>
@@ -345,6 +347,7 @@ export default function PurchaseReport() {
                           <TableCell className="px-6 py-4 font-bold text-sm text-foreground">{format(new Date(p.created_at), 'dd/MM/yyyy')}</TableCell>
                           <TableCell className="font-black text-foreground capitalize">{p.supplier_name || 'Umum'}</TableCell>
                           <TableCell className="font-mono text-xs text-muted-foreground tracking-tighter uppercase">{p.invoice_number || '-'}</TableCell>
+                          <TableCell className="text-xs text-muted-foreground max-w-[200px] truncate" title={p.description}>{p.description || '-'}</TableCell>
                           <TableCell className="text-right px-6 font-black text-orange-600">Rp {Number(p.total_amount).toLocaleString('id-ID')}</TableCell>
                           <TableCell className="text-right px-6">
                             <div className="flex justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -431,6 +434,7 @@ export default function PurchaseReport() {
                             <th className="py-4">Tgl</th>
                             <th className="py-4">Supplier</th>
                             <th className="py-4">Invoice</th>
+                            <th className="py-4">Keterangan</th>
                             <th className="py-4 text-right">Subtotal</th>
                         </tr>
                       </thead>
@@ -440,6 +444,7 @@ export default function PurchaseReport() {
                                 <td className="py-4">{format(new Date(p.created_at), 'dd/MM/yy')}</td>
                                 <td className="py-4 uppercase">{p.supplier_name}</td>
                                 <td className="py-4 font-mono">{p.invoice_number || '-'}</td>
+                                <td className="py-4">{p.description || '-'}</td>
                                 <td className="py-4 text-right">Rp {Number(p.total_amount).toLocaleString('id-ID')}</td>
                             </tr>
                         ))}
