@@ -266,20 +266,46 @@ export default function CoffeePowderReport() {
   });
 
   const handleExportExcel = () => {
-    if (filteredItems.length === 0) return;
-    const data = filteredItems.map((item: any) => ({
-      'Tanggal': format(new Date(item.transactions.created_at), 'dd/MM/yyyy HH:mm'),
-      'Nama Produk': item.product_name || item.products?.name || 'Produk',
-      'Qty': item.quantity,
-      'Harga Satuan': item.price,
-      'Subtotal': item.quantity * item.price,
-      'ID Transaksi': item.transaction_id.substring(0, 8).toUpperCase()
-    }));
-    const ws = XLSX.utils.json_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Laporan Bubuk Kopi");
-    XLSX.writeFile(wb, `Laporan_Bubuk_Kopi_${format(new Date(), 'yyyyMMdd_HHmm')}.xlsx`);
-    toast.success('Laporan Excel berhasil diunduh');
+    if (!filteredItems || filteredItems.length === 0) {
+      toast.error('Tidak ada data untuk diekspor');
+      return;
+    }
+
+    try {
+      const data = filteredItems.map((item: any) => ({
+        'Tanggal': format(new Date(item.transactions.created_at), 'dd/MM/yyyy HH:mm'),
+        'Nama Produk': item.product_name || item.products?.name || 'Produk',
+        'Qty': item.quantity,
+        'Harga Satuan': item.price,
+        'Subtotal': item.quantity * item.price,
+        'ID Transaksi': item.transaction_id.substring(0, 8).toUpperCase()
+      }));
+
+      const ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Laporan Bubuk Kopi");
+
+      // Auto-size columns robustly
+      if (data.length > 0) {
+        const keys = Object.keys(data[0]);
+        const maxWidths = keys.map(key => {
+          let maxLen = key.length;
+          for (const row of data) {
+            const val = row[key as keyof typeof row];
+            const len = val ? val.toString().length : 0;
+            if (len > maxLen) maxLen = len;
+          }
+          return { wch: maxLen + 2 };
+        });
+        ws['!cols'] = maxWidths;
+      }
+
+      XLSX.writeFile(wb, `Laporan_Bubuk_Kopi_${format(new Date(), 'yyyyMMdd_HHmm')}.xlsx`);
+      toast.success('Laporan Excel berhasil diunduh');
+    } catch (error) {
+      console.error('Export Excel Error:', error);
+      toast.error('Gagal mengekspor data ke Excel');
+    }
   };
 
   const handlePresetChange = (preset: string) => {
@@ -383,6 +409,13 @@ export default function CoffeePowderReport() {
           </Button>
           <Button variant="outline" className="rounded-xl border-border bg-card font-black h-11" onClick={handleExportExcel}>
             <TableIcon className="mr-2 h-4 w-4" /> Excel
+          </Button>
+          <Button 
+            variant="outline"
+            className="rounded-xl border-red-200 bg-red-50/50 text-red-600 hover:bg-red-50 hover:text-red-700 pos-shadow font-black h-11"
+            onClick={() => handlePrint()}
+          >
+            <FileText className="mr-2 h-4 w-4" /> Export PDF
           </Button>
         </div>
       </div>
@@ -612,62 +645,56 @@ export default function CoffeePowderReport() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto sm:rounded-3xl border-border bg-card p-0">
-          <div className="p-12 bg-white text-black min-h-[1000px]" ref={printRef}>
-            <div className="text-center space-y-3 mb-10 pb-8 border-b-4 border-double border-gray-900">
-               <h2 className="text-3xl font-black uppercase tracking-tighter">Laporan Penjualan Bubuk Kopi</h2>
-               <div className="flex justify-center gap-4 text-xs font-bold text-gray-500 uppercase tracking-widest">
-                  <span>Mulai: {dateRange?.from ? format(dateRange.from, 'dd/MM/yyyy') : '-'}</span>
-                  <span>Sampai: {dateRange?.to ? format(dateRange.to, 'dd/MM/yyyy') : format(new Date(), 'dd/MM/yyyy')}</span>
-               </div>
-            </div>
+      {/* Printable Content (Off-screen) */}
+      <div style={{ position: 'absolute', left: '-10000px', top: 0 }}>
+        <div className="p-12 bg-white text-black min-h-[1000px]" ref={printRef}>
+          <div className="text-center space-y-3 mb-10 pb-8 border-b-4 border-double border-gray-900">
+             <h2 className="text-3xl font-black uppercase tracking-tighter">Laporan Penjualan Bubuk Kopi</h2>
+             <div className="flex justify-center gap-4 text-xs font-bold text-gray-500 uppercase tracking-widest">
+                <span>Mulai: {dateRange?.from ? format(dateRange.from, 'dd/MM/yyyy') : '-'}</span>
+                <span>Sampai: {dateRange?.to ? format(dateRange.to, 'dd/MM/yyyy') : format(new Date(), 'dd/MM/yyyy')}</span>
+             </div>
+          </div>
 
-            <div className="grid grid-cols-2 gap-8 mb-10">
-                <div className="p-6 bg-gray-50 border-2 border-gray-100 rounded-3xl">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Volume Penjualan</p>
-                    <p className="text-2xl font-black">{totalQty} Pack / Unit</p>
-                </div>
-                <div className="p-6 bg-gray-50 border-2 border-gray-100 rounded-3xl text-right">
-                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Nilai Penjualan</p>
-                    <p className="text-2xl font-black text-emerald-600">Rp {totalRevenue.toLocaleString('id-ID')}</p>
-                </div>
-            </div>
+          <div className="grid grid-cols-2 gap-8 mb-10">
+              <div className="p-6 bg-gray-50 border-2 border-gray-100 rounded-3xl">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Volume Penjualan</p>
+                  <p className="text-2xl font-black">{totalQty} Pack / Unit</p>
+              </div>
+              <div className="p-6 bg-gray-50 border-2 border-gray-100 rounded-3xl text-right">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Nilai Penjualan</p>
+                  <p className="text-2xl font-black text-emerald-600">Rp {totalRevenue.toLocaleString('id-ID')}</p>
+              </div>
+          </div>
 
-            <table className="w-full text-xs">
-              <thead>
-                <tr className="border-b-2 border-gray-900 text-left font-black uppercase tracking-widest">
-                  <th className="py-4">Waktu</th>
-                  <th className="py-4">Produk</th>
-                  <th className="py-4 text-center">Qty</th>
-                  <th className="py-4 text-right">Subtotal</th>
-                </tr>
-              </thead>
-              <tbody className="font-bold text-gray-800">
-                {filteredItems.map((item: any) => (
-                   <tr key={item.id} className="border-b border-gray-100">
-                      <td className="py-4">{format(new Date(item.transactions.created_at), 'dd/MM/yy HH:mm')}</td>
-                      <td className="py-4 uppercase">{item.product_name || item.products?.name || 'Produk'}</td>
-                      <td className="py-4 text-center">{item.quantity}</td>
-                      <td className="py-4 text-right">Rp {(item.quantity * item.price).toLocaleString('id-ID')}</td>
-                   </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                 <tr className="border-t-2 border-gray-900 bg-gray-50">
-                    <td colSpan={3} className="py-6 text-right font-black uppercase tracking-widest">Grand Total Bubuk Kopi</td>
-                    <td className="py-6 text-right font-black text-lg">Rp {totalRevenue.toLocaleString('id-ID')}</td>
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="border-b-2 border-gray-900 text-left font-black uppercase tracking-widest">
+                <th className="py-4">Waktu</th>
+                <th className="py-4">Produk</th>
+                <th className="py-4 text-center">Qty</th>
+                <th className="py-4 text-right">Subtotal</th>
+              </tr>
+            </thead>
+            <tbody className="font-bold text-gray-800">
+              {filteredItems.map((item: any) => (
+                 <tr key={item.id} className="border-b border-gray-100">
+                    <td className="py-4">{format(new Date(item.transactions.created_at), 'dd/MM/yy HH:mm')}</td>
+                    <td className="py-4 uppercase">{item.product_name || item.products?.name || 'Produk'}</td>
+                    <td className="py-4 text-center">{item.quantity}</td>
+                    <td className="py-4 text-right">Rp {(item.quantity * item.price).toLocaleString('id-ID')}</td>
                  </tr>
-              </tfoot>
-            </table>
-          </div>
-          <div className="p-6 bg-card border-t border-border flex justify-end sticky bottom-0 z-10 backdrop-blur-md">
-             <Button onClick={() => handlePrint()} className="gradient-primary text-white rounded-xl h-12 px-8 font-black shadow-lg">
-                <Printer className="mr-2 h-5 w-5" /> CETAK LAPORAN SEKARANG
-             </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+              ))}
+            </tbody>
+            <tfoot>
+               <tr className="border-t-2 border-gray-900 bg-gray-50">
+                  <td colSpan={3} className="py-6 text-right font-black uppercase tracking-widest">Grand Total Bubuk Kopi</td>
+                  <td className="py-6 text-right font-black text-lg">Rp {totalRevenue.toLocaleString('id-ID')}</td>
+               </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
     </div>
   );
 }

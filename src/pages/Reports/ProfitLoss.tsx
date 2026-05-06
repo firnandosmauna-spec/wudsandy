@@ -14,8 +14,10 @@ import {
   Eye,
   Printer,
   Download,
-  Table as TableIcon
+  Table as TableIcon,
+  FileText
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { 
   Select, 
   SelectContent, 
@@ -129,18 +131,39 @@ export default function ProfitLoss() {
   });
 
   const handleExportExcel = () => {
-    const data = [
-      { 'Kategori': 'Pendapatan (Penjualan)', 'Jumlah (Rp)': totalSales },
-      { 'Kategori': 'Pengeluaran (Belanja Stok)', 'Jumlah (Rp)': totalPurchases },
-      { 'Kategori': 'Laba Kotor', 'Jumlah (Rp)': grossProfit },
-      { 'Kategori': 'Margin Keuntungan (%)', 'Jumlah (%)': totalSales > 0 ? ((grossProfit / totalSales) * 100).toFixed(2) : 0 }
-    ];
+    try {
+      const data = [
+        { 'Kategori': 'Pendapatan (Penjualan)', 'Keterangan': 'Total Penjualan Bersih', 'Jumlah (Rp)': totalSales },
+        { 'Kategori': 'Pengeluaran (Belanja Stok)', 'Keterangan': 'Total Belanja Stok/COGS', 'Jumlah (Rp)': totalPurchases },
+        { 'Kategori': 'Laba Kotor', 'Keterangan': 'Pendapatan - Pengeluaran', 'Jumlah (Rp)': grossProfit },
+        { 'Kategori': 'Margin Keuntungan', 'Keterangan': 'Persentase Profit', 'Jumlah (Rp)': totalSales > 0 ? `${((grossProfit / totalSales) * 100).toFixed(2)}%` : '0%' }
+      ];
 
-    const ws = XLSX.utils.json_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Ringkasan Laba Rugi");
-    XLSX.writeFile(wb, `Laporan_Laba_Rugi_${format(new Date(), 'yyyyMMdd')}.xlsx`);
-    toast.success('Laporan Excel berhasil diunduh');
+      const ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Ringkasan Laba Rugi");
+
+      // Auto-size columns robustly
+      if (data.length > 0) {
+        const keys = Object.keys(data[0]);
+        const maxWidths = keys.map(key => {
+          let maxLen = key.length;
+          for (const row of data) {
+            const val = row[key as keyof typeof row];
+            const len = val ? val.toString().length : 0;
+            if (len > maxLen) maxLen = len;
+          }
+          return { wch: maxLen + 2 };
+        });
+        ws['!cols'] = maxWidths;
+      }
+
+      XLSX.writeFile(wb, `Laporan_Laba_Rugi_${format(new Date(), 'yyyyMMdd')}.xlsx`);
+      toast.success('Laporan Excel berhasil diunduh');
+    } catch (error) {
+      console.error('Export Excel Error:', error);
+      toast.error('Gagal mengekspor data ke Excel');
+    }
   };
 
   const handlePresetChange = (preset: string) => {
@@ -201,6 +224,13 @@ export default function ProfitLoss() {
           </Button>
           <Button variant="outline" className="rounded-xl border-border bg-card font-black h-11" onClick={handleExportExcel}>
             <TableIcon className="mr-2 h-4 w-4" /> Export Excel
+          </Button>
+          <Button 
+            variant="outline"
+            className="rounded-xl border-red-200 bg-red-50/50 text-red-600 hover:bg-red-50 hover:text-red-700 pos-shadow font-black h-11"
+            onClick={() => handlePrint()}
+          >
+            <FileText className="mr-2 h-4 w-4" /> Export PDF
           </Button>
         </div>
       </div>
@@ -265,58 +295,51 @@ export default function ProfitLoss() {
         </Card>
       </div>
 
-      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto sm:rounded-3xl border-border bg-card p-0">
-              <DialogHeader className="p-6 bg-primary/5 border-b border-border/50 sticky top-0 z-10 backdrop-blur-md">
-                <DialogTitle className="flex justify-between items-center text-foreground uppercase tracking-widest font-black text-sm">
-                    <span className="flex items-center gap-2"><Eye className="h-5 w-5 text-primary" /> Preview Laba Rugi</span>
-                    <Button onClick={() => handlePrint()} className="gradient-primary text-white rounded-xl h-10 px-6 font-black shadow-lg">
-                        <Printer className="mr-2 h-4 w-4" /> CETAK LAPORAN
-                    </Button>
-                </DialogTitle>
-              </DialogHeader>
-              <div className="p-16 bg-white text-black min-h-[1000px]" ref={printRef}>
-                  <div className="text-center space-y-4 mb-16 pb-10 border-b-4 border-gray-900 border-double">
-                      <h2 className="text-4xl font-black uppercase tracking-tighter">Laporan Laba Rugi Perusahaan</h2>
-                      <div className="flex justify-center gap-6 text-sm font-bold text-gray-500 uppercase tracking-widest">
-                          <span>Periode: {dateRange?.from ? format(dateRange.from, 'dd/MM/yyyy') : '-'} s/d {dateRange?.to ? format(dateRange.to, 'dd/MM/yyyy') : format(new Date(), 'dd/MM/yyyy')}</span>
-                      </div>
-                  </div>
 
-                  <div className="space-y-10 uppercase font-black tracking-widest">
-                      <div className="flex justify-between items-end border-b-2 border-gray-200 pb-4">
-                          <span className="text-sm">TOTAL PENDAPATAN (SALES)</span>
-                          <span className="text-xl text-gray-900">RP {totalSales.toLocaleString('id-ID')}</span>
-                      </div>
-                      <div className="flex justify-between items-end border-b-2 border-gray-200 pb-4">
-                          <span className="text-sm text-rose-500">TOTAL PENGELUARAN (COGS)</span>
-                          <span className="text-xl text-rose-500">RP {totalPurchases.toLocaleString('id-ID')}</span>
-                      </div>
-                      <div className="flex justify-between items-end bg-gray-900 text-white p-6 rounded-2xl">
-                          <span className="text-lg">ESTIMASI LABA BERSIH</span>
-                          <span className="text-3xl">RP {grossProfit.toLocaleString('id-ID')}</span>
-                      </div>
-                      <div className="flex justify-between items-end border-t-2 border-gray-100 pt-4 text-xs text-gray-400">
-                          <span>MARGIN PROFITABILITAS</span>
-                          <span>{totalSales > 0 ? ((grossProfit / totalSales) * 100).toFixed(2) : 0}%</span>
-                      </div>
-                  </div>
 
-                  <div className="mt-32 grid grid-cols-2 gap-24 px-10">
-                      <div className="text-center">
-                          <p className="text-xs font-bold text-gray-500 mb-20 uppercase tracking-widest">Internal Auditor</p>
-                          <div className="w-full border-b border-gray-300"></div>
-                          <p className="text-[10px] font-black mt-2">PARAF & NAMA TERANG</p>
-                      </div>
-                      <div className="text-center">
-                          <p className="text-xs font-bold text-gray-500 mb-20 uppercase tracking-widest">Direktur / Owner</p>
-                          <div className="w-full border-b border-gray-900"></div>
-                          <p className="text-[10px] font-black mt-2">CAP & TANDA TANGAN</p>
-                      </div>
+      {/* Printable Content (Off-screen) */}
+      <div style={{ position: 'absolute', left: '-10000px', top: 0 }}>
+          <div className="p-16 bg-white text-black min-h-[1000px]" ref={printRef}>
+              <div className="text-center space-y-4 mb-16 pb-10 border-b-4 border-gray-900 border-double">
+                  <h2 className="text-4xl font-black uppercase tracking-tighter">Laporan Laba Rugi Perusahaan</h2>
+                  <div className="flex justify-center gap-6 text-sm font-bold text-gray-500 uppercase tracking-widest">
+                      <span>Periode: {dateRange?.from ? format(dateRange.from, 'dd/MM/yyyy') : '-'} s/d {dateRange?.to ? format(dateRange.to, 'dd/MM/yyyy') : format(new Date(), 'dd/MM/yyyy')}</span>
                   </div>
               </div>
-          </DialogContent>
-      </Dialog>
+
+              <div className="space-y-10 uppercase font-black tracking-widest">
+                  <div className="flex justify-between items-end border-b-2 border-gray-200 pb-4">
+                      <span className="text-sm">TOTAL PENDAPATAN (SALES)</span>
+                      <span className="text-xl text-gray-900">RP {totalSales.toLocaleString('id-ID')}</span>
+                  </div>
+                  <div className="flex justify-between items-end border-b-2 border-gray-200 pb-4">
+                      <span className="text-sm text-rose-500">TOTAL PENGELUARAN (COGS)</span>
+                      <span className="text-xl text-rose-500">RP {totalPurchases.toLocaleString('id-ID')}</span>
+                  </div>
+                  <div className="flex justify-between items-end bg-gray-900 text-white p-6 rounded-2xl">
+                      <span className="text-lg">ESTIMASI LABA BERSIH</span>
+                      <span className="text-3xl">RP {grossProfit.toLocaleString('id-ID')}</span>
+                  </div>
+                  <div className="flex justify-between items-end border-t-2 border-gray-100 pt-4 text-xs text-gray-400">
+                      <span>MARGIN PROFITABILITAS</span>
+                      <span>{totalSales > 0 ? ((grossProfit / totalSales) * 100).toFixed(2) : 0}%</span>
+                  </div>
+              </div>
+
+              <div className="mt-32 grid grid-cols-2 gap-24 px-10">
+                  <div className="text-center">
+                      <p className="text-xs font-bold text-gray-500 mb-20 uppercase tracking-widest">Internal Auditor</p>
+                      <div className="w-full border-b border-gray-300"></div>
+                      <p className="text-[10px] font-black mt-2">PARAF & NAMA TERANG</p>
+                  </div>
+                  <div className="text-center">
+                      <p className="text-xs font-bold text-gray-500 mb-20 uppercase tracking-widest">Direktur / Owner</p>
+                      <div className="w-full border-b border-gray-900"></div>
+                      <p className="text-[10px] font-black mt-2">CAP & TANDA TANGAN</p>
+                  </div>
+              </div>
+          </div>
+      </div>
     </div>
   );
 }

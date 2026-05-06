@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { 
@@ -31,23 +31,34 @@ import {
   TrendingUp,
   ShoppingCart,
   AlertCircle,
-  ArrowRight
+  ArrowRight,
+  Printer,
+  FileText
 } from 'lucide-react';
 import { 
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogFooter
 } from "@/components/ui/dialog";
 import { format, isWithinInterval, startOfDay, endOfDay } from 'date-fns';
 import { id } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { useReactToPrint } from 'react-to-print';
+import { toast } from 'sonner';
 
 export default function ShiftHistory() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [dateFilter, setDateFilter] = useState('');
   const [selectedShift, setSelectedShift] = useState<any>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const printRef = useRef<HTMLDivElement>(null);
+  const handlePrint = useReactToPrint({
+    contentRef: printRef,
+    documentTitle: `Laporan_Shift_${format(new Date(), 'yyyyMMdd')}`,
+  });
 
   // Fetch Shift History
   const { data: shifts, isLoading } = useQuery({
@@ -102,10 +113,31 @@ export default function ShiftHistory() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Shift Kasir</h1>
+          <h1 className="text-3xl font-bold text-foreground font-black uppercase tracking-tighter">Shift Kasir</h1>
           <p className="text-muted-foreground mt-1">Pantau sesi kerja kasir dan rekonsiliasi uang tunai secara riil-time.</p>
+        </div>
+        <div className="flex gap-2">
+          <Button 
+            variant="outline" 
+            className="rounded-xl border-border bg-card font-black"
+            onClick={() => setIsPreviewOpen(true)}
+            disabled={isLoading || !filteredShifts?.length}
+          >
+            <Eye className="mr-2 h-4 w-4" /> Preview
+          </Button>
+          <Button 
+            variant="outline"
+            className="rounded-xl border-red-200 bg-red-50/50 text-red-600 hover:bg-red-50 hover:text-red-700 font-black"
+            onClick={() => {
+              setIsPreviewOpen(true);
+              setTimeout(() => handlePrint(), 500);
+            }}
+            disabled={isLoading || !filteredShifts?.length}
+          >
+            <FileText className="mr-2 h-4 w-4" /> Export PDF
+          </Button>
         </div>
       </div>
 
@@ -404,6 +436,76 @@ export default function ShiftHistory() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Report Preview Dialog */}
+      {/* Printable Content (Off-screen) */}
+      <div style={{ position: 'absolute', left: '-10000px', top: 0 }}>
+          <div className="p-12 bg-white text-black min-h-[1000px]" ref={printRef}>
+            <div className="text-center space-y-3 mb-10 pb-8 border-b-4 border-double border-gray-900">
+              <h2 className="text-3xl font-black uppercase tracking-tighter text-gray-900">Laporan Rekapitulasi Shift Kasir</h2>
+              <div className="flex justify-center gap-4 text-xs font-bold text-gray-500 uppercase tracking-widest">
+                <span>Dicetak pada: {format(new Date(), 'dd MMMM yyyy HH:mm', { locale: id })}</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-4 gap-4 mb-10">
+              <div className="p-4 bg-gray-50 border border-gray-200 rounded-2xl">
+                <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Sesi</p>
+                <p className="text-xl font-black text-gray-900">{filteredShifts?.length || 0}</p>
+              </div>
+              <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl">
+                <p className="text-[8px] font-black text-emerald-600/60 uppercase tracking-widest mb-1">Total Penjualan</p>
+                <p className="text-xl font-black text-emerald-600">Rp {totalSales.toLocaleString('id-ID')}</p>
+              </div>
+              <div className="p-4 bg-blue-50 border border-blue-100 rounded-2xl">
+                <p className="text-[8px] font-black text-blue-600/60 uppercase tracking-widest mb-1">Saldo Aktual</p>
+                <p className="text-xl font-black text-blue-600">Rp {totalActual.toLocaleString('id-ID')}</p>
+              </div>
+              <div className="p-4 bg-gray-50 border border-gray-200 rounded-2xl">
+                <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Selisih</p>
+                <p className={cn("text-xl font-black", totalDiff < 0 ? "text-red-600" : "text-emerald-600")}>
+                  Rp {totalDiff.toLocaleString('id-ID')}
+                </p>
+              </div>
+            </div>
+
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b-2 border-gray-900 text-left font-black uppercase tracking-widest">
+                  <th className="py-4 pr-2">Waktu Buka</th>
+                  <th className="py-4 px-2">Kasir</th>
+                  <th className="py-4 px-2 text-center">Status</th>
+                  <th className="py-4 px-2 text-right">Modal</th>
+                  <th className="py-4 px-2 text-right">Penjualan</th>
+                  <th className="py-4 pl-2 text-right">Aktual</th>
+                </tr>
+              </thead>
+              <tbody className="font-bold text-gray-800">
+                {filteredShifts?.map((s) => (
+                  <tr key={s.id} className="border-b border-gray-100">
+                    <td className="py-4 pr-2">{format(new Date(s.opening_time), 'dd/MM/yy HH:mm')}</td>
+                    <td className="py-4 px-2">{s.profiles?.full_name || 'System'}</td>
+                    <td className="py-4 px-2 text-center uppercase text-[8px]">{s.status === 'open' ? 'Aktif' : 'Tutup'}</td>
+                    <td className="py-4 px-2 text-right">Rp {Number(s.opening_balance).toLocaleString('id-ID')}</td>
+                    <td className="py-4 px-2 text-right font-black">Rp {Number(s.total_sales || 0).toLocaleString('id-ID')}</td>
+                    <td className="py-4 pl-2 text-right">Rp {Number(s.actual_balance || 0).toLocaleString('id-ID')}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+
+            <div className="mt-24 grid grid-cols-2 gap-20 px-10">
+              <div className="text-center">
+                <p className="text-xs font-bold text-gray-500 mb-20 uppercase tracking-widest">Kasir / Pelapor</p>
+                <div className="w-full border-b border-gray-300"></div>
+              </div>
+              <div className="text-center">
+                <p className="text-xs font-bold text-gray-500 mb-20 uppercase tracking-widest">Manager / Owner</p>
+                <div className="w-full border-b border-gray-900"></div>
+              </div>
+            </div>
+          </div>
+      </div>
     </div>
   );
 }

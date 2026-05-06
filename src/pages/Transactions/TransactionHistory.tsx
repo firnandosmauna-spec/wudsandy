@@ -182,28 +182,42 @@ export default function TransactionHistory() {
       return;
     }
 
-    const data = filteredTransactions.map(t => ({
-      'Tanggal': format(new Date(t.created_at), 'dd/MM/yyyy HH:mm'),
-      'ID Transaksi': t.id.substring(0, 8).toUpperCase(),
-      'Produk': (t.transaction_items || []).map((i: any) => `${i.product_name || i.products?.name || 'Produk'}${!i.product_id ? ' (Manual)' : ''} (${i.quantity})`).join(', '),
-      'Metode Bayar': t.payment_method,
-      'Kasir': getCashierName(t),
-      'Pelanggan': t.customers?.name || 'Guest',
-      'Total (Rp)': t.adjustedTotal
-    }));
+    try {
+      const data = filteredTransactions.map(t => ({
+        'Tanggal': format(new Date(t.created_at), 'dd/MM/yyyy HH:mm'),
+        'ID Transaksi': (t.receipt_number || t.id.substring(0, 8)).toUpperCase(),
+        'Produk': (t.transaction_items || []).map((i: any) => `${i.product_name || i.products?.name || 'Produk'}${!i.product_id ? ' (Manual)' : ''} (${i.quantity})`).join(', '),
+        'Metode Bayar': t.payment_method || 'Tunai',
+        'Kasir': getCashierName(t),
+        'Pelanggan': t.customers?.name || 'Guest',
+        'Total (Rp)': t.adjustedTotal
+      }));
 
-    const ws = XLSX.utils.json_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Riwayat Transaksi");
+      const ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Riwayat Transaksi");
 
-    // Auto-size columns
-    const maxWidths = Object.keys(data[0]).map(key => 
-      Math.max(...data.map(obj => obj[key as keyof typeof obj]?.toString().length ?? 0), key.length)
-    );
-    ws['!cols'] = maxWidths.map(w => ({ wch: w + 2 } as any));
+      // Auto-size columns robustly
+      if (data.length > 0) {
+        const keys = Object.keys(data[0]);
+        const maxWidths = keys.map(key => {
+          let maxLen = key.length;
+          for (const row of data) {
+            const val = row[key as keyof typeof row];
+            const len = val ? val.toString().length : 0;
+            if (len > maxLen) maxLen = len;
+          }
+          return { wch: maxLen + 2 };
+        });
+        ws['!cols'] = maxWidths;
+      }
 
-    XLSX.writeFile(wb, `Riwayat_Transaksi_${format(new Date(), 'yyyyMMdd_HHmm')}.xlsx`);
-    toast.success('Excel berhasil diunduh');
+      XLSX.writeFile(wb, `Riwayat_Transaksi_${format(new Date(), 'yyyyMMdd_HHmm')}.xlsx`);
+      toast.success('Excel berhasil diunduh');
+    } catch (error) {
+      console.error('Export Excel Error:', error);
+      toast.error('Gagal mengekspor data ke Excel');
+    }
   };
 
   const totalSales = useMemo(() => {
@@ -228,6 +242,15 @@ export default function TransactionHistory() {
             disabled={isLoading || filteredTransactions.length === 0}
           >
             <Eye className="mr-2 h-4 w-4 text-primary" /> Preview
+          </Button>
+          <Button 
+            variant="outline" 
+            size="sm"
+            className="rounded-xl border-border bg-card shadow-sm font-bold text-xs hover:bg-accent transition-all h-9"
+            onClick={() => handlePrint()}
+            disabled={isLoading || filteredTransactions.length === 0}
+          >
+            <FileText className="mr-2 h-4 w-4 text-red-500" /> Export PDF
           </Button>
           <Button 
             variant="outline" 
@@ -537,74 +560,77 @@ export default function TransactionHistory() {
               </Button>
             </DialogTitle>
           </DialogHeader>
-          
-          <div className="p-12 bg-white text-black min-h-[1000px]" ref={printRef}>
-            <div className="text-center space-y-3 mb-10 pb-8 border-b-4 border-double border-gray-900">
-              <h2 className="text-3xl font-black uppercase tracking-tighter text-gray-900">Laporan Audit Transaksi</h2>
-              <div className="flex justify-center gap-4 text-sm font-bold text-gray-600 uppercase tracking-widest flex-wrap">
-                <span>Mulai: {dateRange?.from ? format(dateRange.from, 'dd/MM/yyyy') : '-'}</span>
-                <span>Sampai: {dateRange?.to ? format(dateRange.to, 'dd/MM/yyyy') : format(new Date(), 'dd/MM/yyyy')}</span>
-              </div>
-              <p className="text-[10px] font-medium text-gray-400">Dicetak pada: {format(new Date(), 'dd MMMM yyyy HH:mm', { locale: id })}</p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4 mb-10">
-              <div className="p-4 bg-gray-50 border border-gray-200 rounded-2xl">
-                <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Transaksi</p>
-                <p className="text-xl font-black text-gray-900">{totalTransactions}</p>
-              </div>
-              <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl">
-                <p className="text-[8px] font-black text-primary/60 uppercase tracking-widest mb-1">Total Omzet (Adjusted)</p>
-                <p className="text-xl font-black text-primary">Rp {totalSales.toLocaleString('id-ID')}</p>
-              </div>
-            </div>
-
-            <table className="w-full">
-              <thead>
-                <tr className="border-b-2 border-gray-900 text-left text-[9px] font-black uppercase tracking-widest">
-                  <th className="py-4 pr-2">Waktu</th>
-                  <th className="py-4 px-2">ID</th>
-                  <th className="py-4 px-2">Daftar Produk</th>
-                  <th className="py-4 px-2">Kasir</th>
-                  <th className="py-4 px-2">Pelanggan</th>
-                  <th className="py-4 pl-2 text-right">Nilai (IDR)</th>
-                </tr>
-              </thead>
-              <tbody className="text-[10px] font-bold text-gray-800">
-                {filteredTransactions.map((t) => (
-                  <tr key={t.id} className="border-b border-gray-100">
-                    <td className="py-4 pr-2 whitespace-nowrap">{format(new Date(t.created_at), 'dd/MM/yy HH:mm')}</td>
-                    <td className="py-4 px-2 uppercase">{t.id.substring(0, 8)}</td>
-                    <td className="py-4 px-2">
-                       {(t.transaction_items || []).map((item: any, idx: number) => (
-                        <div key={idx} className="whitespace-nowrap">{item.product_name || item.products?.name || 'Produk'} (x{item.quantity})</div>
-                      ))}
-                    </td>
-                    <td className="py-4 px-2">{getCashierName(t)}</td>
-                    <td className="py-4 px-2 capitalize">{t.customers?.name || 'Guest'}</td>
-                    <td className="py-4 pl-2 text-right whitespace-nowrap">Rp {t.adjustedTotal.toLocaleString('id-ID')}</td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr className="border-t-2 border-gray-900 bg-gray-50">
-                  <td colSpan={5} className="py-6 font-black uppercase text-right text-xs pr-4">Total Akhir Periode</td>
-                  <td className="py-6 pl-2 text-right font-black text-base text-primary">Rp {totalSales.toLocaleString('id-ID')}</td>
-                </tr>
-              </tfoot>
-            </table>
-
-            <div className="mt-24 grid grid-cols-2 gap-20 px-10">
-              <div className="text-center border-t border-gray-300 pt-4">
-                <p className="text-[10px] font-black uppercase tracking-widest">Admin / Saksi</p>
-              </div>
-              <div className="text-center border-t border-gray-300 pt-4">
-                <p className="text-[10px] font-black uppercase tracking-widest">Pimpinan</p>
-              </div>
-            </div>
-          </div>
         </DialogContent>
       </Dialog>
+
+      {/* Printable Content (Off-screen for reliability) */}
+      <div style={{ position: 'absolute', left: '-10000px', top: 0 }}>
+        <div className="p-12 bg-white text-black min-h-[1000px]" ref={printRef}>
+          <div className="text-center space-y-3 mb-10 pb-8 border-b-4 border-double border-gray-900">
+            <h2 className="text-3xl font-black uppercase tracking-tighter text-gray-900">Laporan Audit Transaksi</h2>
+            <div className="flex justify-center gap-4 text-sm font-bold text-gray-600 uppercase tracking-widest flex-wrap">
+              <span>Mulai: {dateRange?.from ? format(dateRange.from, 'dd/MM/yyyy') : '-'}</span>
+              <span>Sampai: {dateRange?.to ? format(dateRange.to, 'dd/MM/yyyy') : format(new Date(), 'dd/MM/yyyy')}</span>
+            </div>
+            <p className="text-[10px] font-medium text-gray-400">Dicetak pada: {format(new Date(), 'dd MMMM yyyy HH:mm', { locale: id })}</p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 mb-10">
+            <div className="p-4 bg-gray-50 border border-gray-200 rounded-2xl">
+              <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Transaksi</p>
+              <p className="text-xl font-black text-gray-900">{totalTransactions}</p>
+            </div>
+            <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl">
+              <p className="text-[8px] font-black text-primary/60 uppercase tracking-widest mb-1">Total Omzet (Adjusted)</p>
+              <p className="text-xl font-black text-primary">Rp {totalSales.toLocaleString('id-ID')}</p>
+            </div>
+          </div>
+
+          <table className="w-full">
+            <thead>
+              <tr className="border-b-2 border-gray-900 text-left text-[9px] font-black uppercase tracking-widest">
+                <th className="py-4 pr-2">Waktu</th>
+                <th className="py-4 px-2">ID</th>
+                <th className="py-4 px-2">Daftar Produk</th>
+                <th className="py-4 px-2">Kasir</th>
+                <th className="py-4 px-2">Pelanggan</th>
+                <th className="py-4 pl-2 text-right">Nilai (IDR)</th>
+              </tr>
+            </thead>
+            <tbody className="text-[10px] font-bold text-gray-800">
+              {filteredTransactions.map((t) => (
+                <tr key={t.id} className="border-b border-gray-100">
+                  <td className="py-4 pr-2 whitespace-nowrap">{format(new Date(t.created_at), 'dd/MM/yy HH:mm')}</td>
+                  <td className="py-4 px-2 uppercase">{t.id.substring(0, 8)}</td>
+                  <td className="py-4 px-2">
+                    {(t.transaction_items || []).map((item: any, idx: number) => (
+                      <div key={idx} className="whitespace-nowrap">{item.product_name || item.products?.name || 'Produk'} (x{item.quantity})</div>
+                    ))}
+                  </td>
+                  <td className="py-4 px-2">{getCashierName(t)}</td>
+                  <td className="py-4 px-2 capitalize">{t.customers?.name || 'Guest'}</td>
+                  <td className="py-4 pl-2 text-right whitespace-nowrap">Rp {t.adjustedTotal.toLocaleString('id-ID')}</td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr className="border-t-2 border-gray-900 bg-gray-50">
+                <td colSpan={5} className="py-6 font-black uppercase text-right text-xs pr-4">Total Akhir Periode</td>
+                <td className="py-6 pl-2 text-right font-black text-base text-primary">Rp {totalSales.toLocaleString('id-ID')}</td>
+              </tr>
+            </tfoot>
+          </table>
+
+          <div className="mt-24 grid grid-cols-2 gap-20 px-10">
+            <div className="text-center border-t border-gray-300 pt-4">
+              <p className="text-[10px] font-black uppercase tracking-widest">Admin / Saksi</p>
+            </div>
+            <div className="text-center border-t border-gray-300 pt-4">
+              <p className="text-[10px] font-black uppercase tracking-widest">Pimpinan</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

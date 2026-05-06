@@ -312,32 +312,46 @@ export default function SalesReport() {
   };
 
   const handleExportExcel = () => {
-    if (filteredTransactions.length === 0) {
+    if (!filteredTransactions || filteredTransactions.length === 0) {
       toast.error('Tidak ada data untuk diekspor');
       return;
     }
 
-    const data = filteredTransactions.map(t => ({
-      'Tanggal': format(new Date(t.created_at), 'dd/MM/yyyy HH:mm'),
-      'ID Transaksi': (t.receipt_number || t.id.substring(0, 8)).toUpperCase(),
-      'Metode Bayar': t.payment_method,
-      'Kasir': getCashierName(t),
-      'Produk': (t.transaction_items || []).map((i: any) => `${i.product_name || i.products?.name || 'Produk'} (${i.quantity})`).join(', '),
-      'Total (Rp)': t.adjustedTotal
-    }));
+    try {
+      const data = filteredTransactions.map(t => ({
+        'Tanggal': format(new Date(t.created_at), 'dd/MM/yyyy HH:mm'),
+        'ID Transaksi': (t.receipt_number || t.id.substring(0, 8)).toUpperCase(),
+        'Metode Bayar': t.payment_method || 'Tunai',
+        'Kasir': getCashierName(t),
+        'Produk': (t.transaction_items || []).map((i: any) => `${i.product_name || i.products?.name || 'Produk'} (${i.quantity})`).join(', '),
+        'Total (Rp)': t.adjustedTotal
+      }));
 
-    const ws = XLSX.utils.json_to_sheet(data);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Laporan Penjualan");
+      const ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Laporan Penjualan");
 
-    // Auto-size columns
-    const maxWidths = Object.keys(data[0]).map(key => 
-      Math.max(...data.map(obj => obj[key as keyof typeof obj]?.toString().length ?? 0), key.length)
-    );
-    ws['!cols'] = maxWidths.map(w => ({ w: w + 2 }));
+      // Auto-size columns robustly
+      if (data.length > 0) {
+        const keys = Object.keys(data[0]);
+        const maxWidths = keys.map(key => {
+          let maxLen = key.length;
+          for (const row of data) {
+            const val = row[key as keyof typeof row];
+            const len = val ? val.toString().length : 0;
+            if (len > maxLen) maxLen = len;
+          }
+          return { wch: maxLen + 2 };
+        });
+        ws['!cols'] = maxWidths;
+      }
 
-    XLSX.writeFile(wb, `Laporan_Penjualan_${format(new Date(), 'yyyyMMdd_HHmm')}.xlsx`);
-    toast.success('Laporan Excel berhasil diunduh');
+      XLSX.writeFile(wb, `Laporan_Penjualan_${format(new Date(), 'yyyyMMdd_HHmm')}.xlsx`);
+      toast.success('Laporan Excel berhasil diunduh');
+    } catch (error) {
+      console.error('Export Excel Error:', error);
+      toast.error('Gagal mengekspor data ke Excel');
+    }
   };
 
   const handlePresetChange = (preset: string) => {
@@ -383,6 +397,14 @@ export default function SalesReport() {
             disabled={isLoading || filteredTransactions.length === 0}
           >
             <TableIcon className="mr-2 h-4 w-4" /> Export Excel
+          </Button>
+          <Button 
+            variant="outline"
+            className="rounded-xl border-red-200 bg-red-50/50 text-red-600 hover:bg-red-50 hover:text-red-700 pos-shadow font-black"
+            onClick={() => handlePrint()}
+            disabled={isLoading || filteredTransactions.length === 0}
+          >
+            <FileText className="mr-2 h-4 w-4" /> Export PDF
           </Button>
           <Button 
             className="gradient-primary text-white rounded-xl h-11 px-6 font-black shadow-lg pos-shadow"
@@ -887,96 +909,87 @@ export default function SalesReport() {
         </DialogContent>
       </Dialog>
 
-      {/* Report Preview Dialog */}
-      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto sm:rounded-3xl border-border bg-card p-0">
-          <DialogHeader className="p-6 bg-primary/5 border-b border-border/50 sticky top-0 z-10 backdrop-blur-md">
-            <DialogTitle className="flex justify-between items-center text-foreground">
-              <span className="flex items-center gap-2 font-black uppercase text-sm tracking-widest"><Eye className="h-5 w-5 text-primary" /> Pratinjau Laporan</span>
-              <Button onClick={() => handlePrint()} className="gradient-primary text-white rounded-xl h-10 px-6 font-black shadow-lg">
-                <Printer className="mr-2 h-4 w-4" /> CETAK LAPORAN
-              </Button>
-            </DialogTitle>
-          </DialogHeader>
-          
-          <div className="p-12 bg-white text-black min-h-[1000px]" ref={printRef}>
-            <div className="text-center space-y-3 mb-12 pb-8 border-b-4 border-double border-gray-900">
-              <h2 className="text-3xl font-black uppercase tracking-tighter text-gray-900">Laporan Pendapatan Penjualan</h2>
-              <div className="flex justify-center gap-4 text-sm font-bold text-gray-600 uppercase tracking-widest flex-wrap">
-                <span>Mulai: {dateRange?.from ? format(dateRange.from, 'dd/MM/yyyy') : '-'}</span>
-                <span>Sampai: {dateRange?.to ? format(dateRange.to, 'dd/MM/yyyy') : format(new Date(), 'dd/MM/yyyy')}</span>
-                <span>Metode: {paymentFilter === 'all' ? 'Semua' : paymentFilter === 'tunai' ? 'Tunai' : 'Non-Tunai'}</span>
-              </div>
-              <p className="text-[10px] font-medium text-gray-400">Dicetak pada: {format(new Date(), 'dd MMMM yyyy HH:mm', { locale: id })}</p>
+
+
+      {/* Printable Content (Off-screen for reliability) */}
+      <div style={{ position: 'absolute', left: '-10000px', top: 0 }}>
+        <div className="p-12 bg-white text-black min-h-[1000px]" ref={printRef}>
+          <div className="text-center space-y-3 mb-12 pb-8 border-b-4 border-double border-gray-900">
+            <h2 className="text-3xl font-black uppercase tracking-tighter text-gray-900">Laporan Pendapatan Penjualan</h2>
+            <div className="flex justify-center gap-4 text-sm font-bold text-gray-600 uppercase tracking-widest flex-wrap">
+              <span>Mulai: {dateRange?.from ? format(dateRange.from, 'dd/MM/yyyy') : '-'}</span>
+              <span>Sampai: {dateRange?.to ? format(dateRange.to, 'dd/MM/yyyy') : format(new Date(), 'dd/MM/yyyy')}</span>
+              <span>Metode: {paymentFilter === 'all' ? 'Semua' : paymentFilter === 'tunai' ? 'Tunai' : 'Non-Tunai'}</span>
             </div>
+            <p className="text-[10px] font-medium text-gray-400">Dicetak pada: {format(new Date(), 'dd MMMM yyyy HH:mm', { locale: id })}</p>
+          </div>
 
-            <div className="grid grid-cols-4 gap-4 mb-12">
-              <div className="p-4 bg-gray-50 border border-gray-200 rounded-2xl">
-                <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Transaksi</p>
-                <p className="text-xl font-black text-gray-900">{filteredTransactions.length}</p>
-              </div>
-              <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl">
-                <p className="text-[8px] font-black text-emerald-600/60 uppercase tracking-widest mb-1">Total Tunai</p>
-                <p className="text-xl font-black text-emerald-600">Rp {totalTunai.toLocaleString('id-ID')}</p>
-              </div>
-              <div className="p-4 bg-blue-50 border border-blue-100 rounded-2xl">
-                <p className="text-[8px] font-black text-blue-600/60 uppercase tracking-widest mb-1">Non-Tunai</p>
-                <p className="text-xl font-black text-blue-600">Rp {totalNonTunai.toLocaleString('id-ID')}</p>
-              </div>
-              <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl">
-                <p className="text-[8px] font-black text-primary/60 uppercase tracking-widest mb-1">Total Omzet</p>
-                <p className="text-xl font-black text-primary">Rp {totalSales.toLocaleString('id-ID')}</p>
-              </div>
+          <div className="grid grid-cols-4 gap-4 mb-12">
+            <div className="p-4 bg-gray-50 border border-gray-200 rounded-2xl">
+              <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Transaksi</p>
+              <p className="text-xl font-black text-gray-900">{filteredTransactions.length}</p>
             </div>
-
-            <table className="w-full">
-              <thead>
-                <tr className="border-b-2 border-gray-900 text-left text-[10px] font-black uppercase tracking-widest">
-                  <th className="py-4 pr-2">Waktu Transaksi</th>
-                  <th className="py-4 px-2 text-center">Metode</th>
-                  <th className="py-4 px-2">Daftar Produk</th>
-                  <th className="py-4 px-2 text-center">Kasir</th>
-                  <th className="py-4 pl-2 text-right">Nilai (IDR)</th>
-                </tr>
-              </thead>
-              <tbody className="text-xs font-bold text-gray-800">
-                {filteredTransactions.map((t) => (
-                  <tr key={t.id} className="border-b border-gray-100">
-                    <td className="py-4 pr-2">{format(new Date(t.created_at), 'dd/MM/yy HH:mm')}</td>
-                    <td className="py-4 px-2 text-center uppercase tracking-wider text-[8px]">{t.payment_method}</td>
-                    <td className="py-4 px-2 text-[9px]">
-                      {(t.transaction_items || []).map((item: any, idx: number) => (
-                        <div key={idx}>{item.product_name || item.products?.name || 'Produk'} (x{item.quantity})</div>
-                      ))}
-                    </td>
-                    <td className="py-4 px-2 text-center">{getCashierName(t)}</td>
-                    <td className="py-4 pl-2 text-right">Rp {t.adjustedTotal.toLocaleString('id-ID')}</td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr className="border-t-2 border-gray-900 bg-gray-50">
-                  <td colSpan={3} className="py-6 font-black uppercase text-right text-xs pr-4">Total Akhir Periode</td>
-                  <td className="py-6 pl-4 text-right font-black text-lg text-primary">Rp {totalSales.toLocaleString('id-ID')}</td>
-                </tr>
-              </tfoot>
-            </table>
-
-            <div className="mt-24 grid grid-cols-2 gap-20 px-10">
-              <div className="text-center">
-                <p className="text-xs font-bold text-gray-500 mb-20 uppercase tracking-widest">Kasir / Saksi</p>
-                <div className="inline-block w-full border-b border-gray-300"></div>
-                <p className="text-[10px] font-black mt-2 uppercase tracking-widest">Tanda Tangan</p>
-              </div>
-              <div className="text-center">
-                <p className="text-xs font-bold text-gray-500 mb-20 uppercase tracking-widest">Pimpinan / Pemilik</p>
-                <div className="inline-block w-full border-b border-gray-900"></div>
-                <p className="text-[10px] font-black mt-2 uppercase tracking-widest">Otorisasi Resmi</p>
-              </div>
+            <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-2xl">
+              <p className="text-[8px] font-black text-emerald-600/60 uppercase tracking-widest mb-1">Total Tunai</p>
+              <p className="text-xl font-black text-emerald-600">Rp {totalTunai.toLocaleString('id-ID')}</p>
+            </div>
+            <div className="p-4 bg-blue-50 border border-blue-100 rounded-2xl">
+              <p className="text-[8px] font-black text-blue-600/60 uppercase tracking-widest mb-1">Non-Tunai</p>
+              <p className="text-xl font-black text-blue-600">Rp {totalNonTunai.toLocaleString('id-ID')}</p>
+            </div>
+            <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl">
+              <p className="text-[8px] font-black text-primary/60 uppercase tracking-widest mb-1">Total Omzet</p>
+              <p className="text-xl font-black text-primary">Rp {totalSales.toLocaleString('id-ID')}</p>
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
+
+          <table className="w-full">
+            <thead>
+              <tr className="border-b-2 border-gray-900 text-left text-[10px] font-black uppercase tracking-widest">
+                <th className="py-4 pr-2">Waktu Transaksi</th>
+                <th className="py-4 px-2 text-center">Metode</th>
+                <th className="py-4 px-2">Daftar Produk</th>
+                <th className="py-4 px-2 text-center">Kasir</th>
+                <th className="py-4 pl-2 text-right">Nilai (IDR)</th>
+              </tr>
+            </thead>
+            <tbody className="text-xs font-bold text-gray-800">
+              {filteredTransactions.map((t) => (
+                <tr key={t.id} className="border-b border-gray-100">
+                  <td className="py-4 pr-2">{format(new Date(t.created_at), 'dd/MM/yy HH:mm')}</td>
+                  <td className="py-4 px-2 text-center uppercase tracking-wider text-[8px]">{t.payment_method}</td>
+                  <td className="py-4 px-2 text-[9px]">
+                    {(t.transaction_items || []).map((item: any, idx: number) => (
+                      <div key={idx}>{item.product_name || item.products?.name || 'Produk'} (x{item.quantity})</div>
+                    ))}
+                  </td>
+                  <td className="py-4 px-2 text-center">{getCashierName(t)}</td>
+                  <td className="py-4 pl-2 text-right">Rp {t.adjustedTotal.toLocaleString('id-ID')}</td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <tr className="border-t-2 border-gray-900 bg-gray-50">
+                <td colSpan={3} className="py-6 font-black uppercase text-right text-xs pr-4">Total Akhir Periode</td>
+                <td className="py-6 pl-4 text-right font-black text-lg text-primary">Rp {totalSales.toLocaleString('id-ID')}</td>
+              </tr>
+            </tfoot>
+          </table>
+
+          <div className="mt-24 grid grid-cols-2 gap-20 px-10">
+            <div className="text-center">
+              <p className="text-xs font-bold text-gray-500 mb-20 uppercase tracking-widest">Kasir / Saksi</p>
+              <div className="inline-block w-full border-b border-gray-300"></div>
+              <p className="text-[10px] font-black mt-2 uppercase tracking-widest">Tanda Tangan</p>
+            </div>
+            <div className="text-center">
+              <p className="text-xs font-bold text-gray-500 mb-20 uppercase tracking-widest">Pimpinan / Pemilik</p>
+              <div className="inline-block w-full border-b border-gray-900"></div>
+              <p className="text-[10px] font-black mt-2 uppercase tracking-widest">Otorisasi Resmi</p>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
