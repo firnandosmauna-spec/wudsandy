@@ -409,6 +409,66 @@ export default function PurchaseReport() {
           </Table>
       </div>
 
+      {/* Report Preview Dialog */}
+      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto sm:rounded-3xl border-border bg-card p-0">
+          <DialogHeader className="p-6 bg-primary/5 border-b border-border/50 sticky top-0 z-10 backdrop-blur-md">
+            <DialogTitle className="flex justify-between items-center text-foreground">
+              <span className="flex items-center gap-2 font-black uppercase text-sm tracking-widest"><Eye className="h-5 w-5 text-primary" /> Pratinjau Laporan Pembelian</span>
+              <Button onClick={() => handlePrint()} className="gradient-primary text-white rounded-xl h-10 px-6 font-black shadow-lg">
+                <Printer className="mr-2 h-4 w-4" /> CETAK LAPORAN
+              </Button>
+            </DialogTitle>
+          </DialogHeader>
+          <div className="p-12 bg-white text-black">
+              <div className="text-center space-y-3 mb-10 pb-8 border-b-4 border-double border-gray-900">
+                  <h2 className="text-3xl font-black uppercase tracking-tighter">Laporan Rekapitulasi Pembelian</h2>
+                  <div className="flex justify-center gap-4 text-xs font-bold text-gray-500 uppercase tracking-widest">
+                      <span>Mulai: {dateRange?.from ? format(dateRange.from, 'dd/MM/yyyy') : '-'}</span>
+                      <span>Sampai: {dateRange?.to ? format(dateRange.to, 'dd/MM/yyyy') : format(new Date(), 'dd/MM/yyyy')}</span>
+                  </div>
+              </div>
+              <div className="p-6 bg-gray-50 border-2 border-gray-100 rounded-3xl mb-10 flex justify-between items-center">
+                <div>
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Item Belanja</p>
+                    <p className="text-2xl font-black">{filteredPurchases.length} Faktur</p>
+                </div>
+                <div className="text-right">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Anggaran Keluar</p>
+                    <p className="text-2xl font-black text-orange-600">Rp {totalExpense.toLocaleString('id-ID')}</p>
+                </div>
+              </div>
+              <table className="w-full mb-20 text-xs">
+                  <thead>
+                    <tr className="border-b-2 border-gray-900 text-left font-black uppercase tracking-widest">
+                        <th className="py-4">Tgl</th>
+                        <th className="py-4">Supplier</th>
+                        <th className="py-4">Invoice</th>
+                        <th className="py-4">Keterangan</th>
+                        <th className="py-4 text-right">Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody className="font-bold text-gray-800">
+                    {filteredPurchases.map((p: any) => (
+                        <tr key={p.id} className="border-b border-gray-100">
+                            <td className="py-4">{format(new Date(p.created_at), 'dd/MM/yy')}</td>
+                            <td className="py-4 uppercase">{p.supplier_name}</td>
+                            <td className="py-4 font-mono">{p.invoice_number || '-'}</td>
+                            <td className="py-4">{p.description || '-'}</td>
+                            <td className="py-4 text-right">Rp {Number(p.total_amount).toLocaleString('id-ID')}</td>
+                        </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    <tr className="border-t-2 border-gray-900 bg-gray-50">
+                        <td colSpan={3} className="py-6 text-right font-black uppercase tracking-widest">GRAND TOTAL</td>
+                        <td className="py-6 text-right font-black text-lg">Rp {totalExpense.toLocaleString('id-ID')}</td>
+                    </tr>
+                  </tfoot>
+              </table>
+          </div>
+        </DialogContent>
+      </Dialog>
       {/* Delete Confirmation Alert */}
       <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
         <AlertDialogContent className="rounded-3xl border-border bg-card">
@@ -427,14 +487,12 @@ export default function PurchaseReport() {
               className="bg-red-600 hover:bg-red-700 text-white rounded-xl font-black"
               disabled={deleteMutation.isPending}
             >
-              {deleteMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash className="h-4 w-4 mr-2" />}
+              {deleteMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Trash2 className="h-4 w-4 mr-2" />}
               HAPUS PERMANEN
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-
 
       {/* Printable Content (Off-screen) */}
       <div style={{ position: 'absolute', left: '-10000px', top: 0 }}>

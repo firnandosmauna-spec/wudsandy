@@ -296,8 +296,59 @@ export default function ProfitLoss() {
       </div>
 
 
+      {/* Report Preview Dialog */}
+      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto sm:rounded-3xl border-border bg-card p-0">
+          <DialogHeader className="p-6 bg-primary/5 border-b border-border/50 sticky top-0 z-10 backdrop-blur-md">
+            <DialogTitle className="flex justify-between items-center text-foreground">
+              <span className="flex items-center gap-2 font-black uppercase text-sm tracking-widest"><Eye className="h-5 w-5 text-primary" /> Pratinjau Laporan Laba Rugi</span>
+              <Button onClick={() => handlePrint()} className="gradient-primary text-white rounded-xl h-10 px-6 font-black shadow-lg">
+                <Printer className="mr-2 h-4 w-4" /> CETAK LAPORAN
+              </Button>
+            </DialogTitle>
+          </DialogHeader>
+          <div className="p-16 bg-white text-black">
+              <div className="text-center space-y-4 mb-16 pb-10 border-b-4 border-gray-900 border-double">
+                  <h2 className="text-4xl font-black uppercase tracking-tighter">Laporan Laba Rugi Perusahaan</h2>
+                  <div className="flex justify-center gap-6 text-sm font-bold text-gray-500 uppercase tracking-widest">
+                      <span>Periode: {dateRange?.from ? format(dateRange.from, 'dd/MM/yyyy') : '-'} s/d {dateRange?.to ? format(dateRange.to, 'dd/MM/yyyy') : format(new Date(), 'dd/MM/yyyy')}</span>
+                  </div>
+              </div>
 
-      {/* Printable Content (Off-screen) */}
+              <div className="space-y-10 uppercase font-black tracking-widest">
+                  <div className="flex justify-between items-end border-b-2 border-gray-200 pb-4">
+                      <span className="text-sm">TOTAL PENDAPATAN (SALES)</span>
+                      <span className="text-xl text-gray-900">RP {totalSales.toLocaleString('id-ID')}</span>
+                  </div>
+                  <div className="flex justify-between items-end border-b-2 border-gray-200 pb-4">
+                      <span className="text-sm text-rose-500">TOTAL PENGELUARAN (COGS)</span>
+                      <span className="text-xl text-rose-500">RP {totalPurchases.toLocaleString('id-ID')}</span>
+                  </div>
+                  <div className="flex justify-between items-end bg-gray-900 text-white p-6 rounded-2xl">
+                      <span className="text-lg">ESTIMASI LABA BERSIH</span>
+                      <span className="text-3xl">RP {grossProfit.toLocaleString('id-ID')}</span>
+                  </div>
+                  <div className="flex justify-between items-end border-t-2 border-gray-100 pt-4 text-xs text-gray-400">
+                      <span>MARGIN PROFITABILITAS</span>
+                      <span>{totalSales > 0 ? ((grossProfit / totalSales) * 100).toFixed(2) : 0}%</span>
+                  </div>
+              </div>
+
+              <div className="mt-32 grid grid-cols-2 gap-24 px-10">
+                  <div className="text-center">
+                      <p className="text-xs font-bold text-gray-500 mb-20 uppercase tracking-widest">Internal Auditor</p>
+                      <div className="w-full border-b border-gray-300"></div>
+                      <p className="text-[10px] font-black mt-2">PARAF & NAMA TERANG</p>
+                  </div>
+                  <div className="text-center">
+                      <p className="text-xs font-bold text-gray-500 mb-20 uppercase tracking-widest">Direktur / Owner</p>
+                      <div className="w-full border-b border-gray-900"></div>
+                      <p className="text-[10px] font-black mt-2">CAP & TANDA TANGAN</p>
+                  </div>
+              </div>
+          </div>
+        </DialogContent>
+      </Dialog>
       <div style={{ position: 'absolute', left: '-10000px', top: 0 }}>
           <div className="p-16 bg-white text-black min-h-[1000px]" ref={printRef}>
               <div className="text-center space-y-4 mb-16 pb-10 border-b-4 border-gray-900 border-double">

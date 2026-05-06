@@ -644,8 +644,66 @@ export default function CoffeePowderReport() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      {/* Report Preview Dialog */}
+      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto sm:rounded-3xl border-border bg-card p-0">
+          <DialogHeader className="p-6 bg-primary/5 border-b border-border/50 sticky top-0 z-10 backdrop-blur-md">
+            <DialogTitle className="flex justify-between items-center text-foreground">
+              <span className="flex items-center gap-2 font-black uppercase text-sm tracking-widest"><Eye className="h-5 w-5 text-primary" /> Pratinjau Laporan Bubuk Kopi</span>
+              <Button onClick={() => handlePrint()} className="gradient-primary text-white rounded-xl h-10 px-6 font-black shadow-lg">
+                <Printer className="mr-2 h-4 w-4" /> CETAK LAPORAN
+              </Button>
+            </DialogTitle>
+          </DialogHeader>
+          <div className="p-12 bg-white text-black">
+            <div className="text-center space-y-3 mb-10 pb-8 border-b-4 border-double border-gray-900">
+               <h2 className="text-3xl font-black uppercase tracking-tighter">Laporan Penjualan Bubuk Kopi</h2>
+               <div className="flex justify-center gap-4 text-xs font-bold text-gray-500 uppercase tracking-widest">
+                  <span>Mulai: {dateRange?.from ? format(dateRange.from, 'dd/MM/yyyy') : '-'}</span>
+                  <span>Sampai: {dateRange?.to ? format(dateRange.to, 'dd/MM/yyyy') : format(new Date(), 'dd/MM/yyyy')}</span>
+               </div>
+            </div>
 
-      {/* Printable Content (Off-screen) */}
+            <div className="grid grid-cols-2 gap-8 mb-10">
+                <div className="p-6 bg-gray-50 border-2 border-gray-100 rounded-3xl">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Volume Penjualan</p>
+                    <p className="text-2xl font-black">{totalQty} Pack / Unit</p>
+                </div>
+                <div className="text-right p-6 bg-gray-50 border-2 border-gray-100 rounded-3xl">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Nilai Penjualan</p>
+                    <p className="text-2xl font-black text-emerald-600">Rp {totalRevenue.toLocaleString('id-ID')}</p>
+                </div>
+            </div>
+
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="border-b-2 border-gray-900 text-left font-black uppercase tracking-widest">
+                  <th className="py-4">Waktu</th>
+                  <th className="py-4">Produk</th>
+                  <th className="py-4 text-center">Qty</th>
+                  <th className="py-4 text-right">Subtotal</th>
+                </tr>
+              </thead>
+              <tbody className="font-bold text-gray-800">
+                {filteredItems.map((item: any) => (
+                   <tr key={item.id} className="border-b border-gray-100">
+                      <td className="py-4">{format(new Date(item.transactions.created_at), 'dd/MM/yy HH:mm')}</td>
+                      <td className="py-4 uppercase">{item.product_name || item.products?.name || 'Produk'}</td>
+                      <td className="py-4 text-center">{item.quantity}</td>
+                      <td className="py-4 text-right">Rp {(item.quantity * item.price).toLocaleString('id-ID')}</td>
+                   </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                 <tr className="border-t-2 border-gray-900 bg-gray-50">
+                    <td colSpan={3} className="py-6 text-right font-black uppercase tracking-widest">Grand Total Bubuk Kopi</td>
+                    <td className="py-6 text-right font-black text-lg">Rp {totalRevenue.toLocaleString('id-ID')}</td>
+                 </tr>
+              </tfoot>
+            </table>
+          </div>
+        </DialogContent>
+      </Dialog>
       <div style={{ position: 'absolute', left: '-10000px', top: 0 }}>
         <div className="p-12 bg-white text-black min-h-[1000px]" ref={printRef}>
           <div className="text-center space-y-3 mb-10 pb-8 border-b-4 border-double border-gray-900">

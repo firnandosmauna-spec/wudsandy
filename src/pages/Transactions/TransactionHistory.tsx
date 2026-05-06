@@ -560,6 +560,61 @@ export default function TransactionHistory() {
               </Button>
             </DialogTitle>
           </DialogHeader>
+          
+          <div className="p-12 bg-white text-black">
+            <div className="text-center space-y-3 mb-10 pb-8 border-b-4 border-double border-gray-900">
+              <h2 className="text-3xl font-black uppercase tracking-tighter text-gray-900">Laporan Audit Transaksi</h2>
+              <div className="flex justify-center gap-4 text-sm font-bold text-gray-600 uppercase tracking-widest flex-wrap">
+                <span>Mulai: {dateRange?.from ? format(dateRange.from, 'dd/MM/yyyy') : '-'}</span>
+                <span>Sampai: {dateRange?.to ? format(dateRange.to, 'dd/MM/yyyy') : format(new Date(), 'dd/MM/yyyy')}</span>
+              </div>
+              <p className="text-[10px] font-medium text-gray-400">Dicetak pada: {format(new Date(), 'dd MMMM yyyy HH:mm', { locale: id })}</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 mb-10">
+              <div className="p-4 bg-gray-50 border border-gray-200 rounded-2xl">
+                <p className="text-[8px] font-black text-gray-400 uppercase tracking-widest mb-1">Total Transaksi</p>
+                <p className="text-xl font-black text-gray-900">{totalTransactions}</p>
+              </div>
+              <div className="p-4 bg-primary/5 border border-primary/20 rounded-2xl">
+                <p className="text-[8px] font-black text-primary/60 uppercase tracking-widest mb-1">Total Omzet (Adjusted)</p>
+                <p className="text-xl font-black text-primary">Rp {totalSales.toLocaleString('id-ID')}</p>
+              </div>
+            </div>
+
+            <table className="w-full">
+              <thead>
+                <tr className="border-b-2 border-gray-900 text-left text-[9px] font-black uppercase tracking-widest">
+                  <th className="py-4 pr-2">Waktu</th>
+                  <th className="py-4 px-2">ID</th>
+                  <th className="py-4 px-2">Daftar Produk</th>
+                  <th className="py-4 px-2">Kasir</th>
+                  <th className="py-4 px-2">Pelanggan</th>
+                  <th className="py-4 pl-2 text-right">Nilai (IDR)</th>
+                </tr>
+              </thead>
+              <tbody className="text-[10px] font-bold text-gray-800">
+                {filteredTransactions.map((t: any) => (
+                  <tr key={t.id} className="border-b border-gray-100">
+                    <td className="py-4 pr-2">{format(new Date(t.created_at), 'dd/MM HH:mm')}</td>
+                    <td className="py-4 px-2 font-mono text-[8px]">{t.id.split('-')[0]}</td>
+                    <td className="py-4 px-2 italic text-gray-500">
+                      {t.transaction_items?.map((item: any) => `${item.products?.name} x${item.quantity}`).join(', ') || '-'}
+                    </td>
+                    <td className="py-4 px-2 uppercase">{t.profiles?.full_name || 'Admin'}</td>
+                    <td className="py-4 px-2 capitalize">{t.customers?.name || 'Umum'}</td>
+                    <td className="py-4 pl-2 text-right font-black">Rp {Number(t.total_amount).toLocaleString('id-ID')}</td>
+                  </tr>
+                ))}
+              </tbody>
+              <tfoot>
+                <tr className="border-t-2 border-gray-900 bg-gray-50">
+                  <td colSpan={5} className="py-6 text-right font-black uppercase tracking-widest">Grand Total Omzet</td>
+                  <td className="py-6 text-right font-black text-lg">Rp {totalSales.toLocaleString('id-ID')}</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
         </DialogContent>
       </Dialog>
 
