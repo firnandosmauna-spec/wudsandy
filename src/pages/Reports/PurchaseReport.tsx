@@ -113,7 +113,8 @@ export default function PurchaseReport() {
         let query = (supabase as any)
           .from('purchases')
           .select('*, profiles(full_name)')
-          .order('created_at', { ascending: false });
+          .order('created_at', { ascending: false })
+          .limit(50000);
 
         if (cashierId !== 'all') {
           query = query.eq('user_id', cashierId);
@@ -133,7 +134,8 @@ export default function PurchaseReport() {
              const fallback = await (supabase as any)
                .from('purchases')
                .select('*')
-               .order('created_at', { ascending: false });
+               .order('created_at', { ascending: false })
+               .limit(50000);
              if (fallback.error) throw fallback.error;
              return fallback.data;
            }
@@ -278,8 +280,8 @@ export default function PurchaseReport() {
       case 'last30days':
         setDateRange({ from: subDays(today, 30), to: today });
         break;
-      case 'thismonth':
-        setDateRange({ from: startOfMonth(today), to: endOfMonth(today) });
+      case 'yesterday':
+        setDateRange({ from: subDays(today, 1), to: subDays(today, 1) });
         break;
     }
   };
@@ -374,6 +376,7 @@ export default function PurchaseReport() {
           <div className="flex flex-wrap items-center gap-2 bg-muted/30 p-1.5 rounded-2xl border border-border/50">
             {[
               { id: 'today', label: 'Hari Ini' },
+              { id: 'yesterday', label: 'Kemarin' },
               { id: 'last7days', label: '7 Hari' },
               { id: 'last30days', label: '30 Hari' },
             ].map((p) => (
@@ -390,37 +393,6 @@ export default function PurchaseReport() {
                 {p.label}
               </Button>
             ))}
-            
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={rangePreset === 'custom' ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setRangePreset('custom')}
-                  className={cn(
-                    "rounded-xl h-9 px-4 font-bold gap-2 text-xs",
-                    rangePreset === 'custom' ? "gradient-primary text-white shadow-md" : "hover:bg-accent text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="h-4 w-4" /> Rentang Tanggal
-                  <ChevronDown className="h-4 w-4 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 rounded-3xl overflow-hidden border-border shadow-2xl" align="end">
-                <Calendar
-                  initialFocus
-                  mode="range"
-                  defaultMonth={dateRange?.from}
-                  selected={dateRange}
-                  onSelect={(range) => {
-                      setDateRange(range);
-                      setRangePreset('custom');
-                  }}
-                  numberOfMonths={2}
-                  locale={id}
-                />
-              </PopoverContent>
-            </Popover>
           </div>
 
           <div className="hidden xl:block h-10 w-px bg-border mx-2" />

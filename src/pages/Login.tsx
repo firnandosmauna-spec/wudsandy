@@ -65,11 +65,11 @@ export default function Login() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="mb-8 text-center space-y-4">
-          <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-[2rem] bg-white border-2 border-primary/20 shadow-xl overflow-hidden group hover:scale-110 transition-transform duration-500">
+          <div className="mx-auto flex h-32 w-32 items-center justify-center rounded-[2rem] bg-transparent overflow-hidden group hover:scale-110 transition-transform duration-500">
             <img 
                src={config?.logo_url || "/wudkopi-logo.png"} 
                alt={storeName} 
-               className="h-full w-full object-cover" 
+               className="h-full w-full object-contain drop-shadow-xl" 
                onError={(e) => {
                  const target = e.target as HTMLImageElement;
                  if (!target.src.includes('wudkopi-logo.png')) {

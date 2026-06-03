@@ -322,8 +322,8 @@ export default function CoffeePowderReport() {
       case 'last30days':
         setDateRange({ from: subDays(today, 30), to: today });
         break;
-      case 'thismonth':
-        setDateRange({ from: startOfMonth(today), to: endOfMonth(today) });
+      case 'yesterday':
+        setDateRange({ from: subDays(today, 1), to: subDays(today, 1) });
         break;
     }
   };
@@ -459,6 +459,7 @@ export default function CoffeePowderReport() {
           <div className="flex flex-wrap items-center gap-2 bg-muted/30 p-1.5 rounded-2xl border border-border/50">
             {[
               { id: 'today', label: 'Hari Ini' },
+              { id: 'yesterday', label: 'Kemarin' },
               { id: 'last7days', label: '7 Hari' },
               { id: 'last30days', label: '30 Hari' },
             ].map((p) => (
@@ -476,36 +477,37 @@ export default function CoffeePowderReport() {
               </Button>
             ))}
             
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={rangePreset === 'custom' ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setRangePreset('custom')}
-                  className={cn(
-                    "rounded-xl h-9 px-4 font-bold gap-2 text-xs",
-                    rangePreset === 'custom' ? "gradient-primary text-white shadow-md" : "hover:bg-accent text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="h-4 w-4" /> Rentang Tanggal
-                  <ChevronDown className="h-4 w-4 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 rounded-3xl overflow-hidden border-border shadow-2xl" align="end">
-                <Calendar
-                  initialFocus
-                  mode="range"
-                  defaultMonth={dateRange?.from}
-                  selected={dateRange}
-                  onSelect={(range) => {
-                      setDateRange(range);
-                      setRangePreset('custom');
-                  }}
-                  numberOfMonths={2}
-                  locale={id}
-                />
-              </PopoverContent>
-            </Popover>
+          </div>
+
+          <div className="hidden xl:block h-10 w-px bg-border mx-2" />
+
+          <div className="grid grid-cols-2 gap-3 bg-muted/30 p-1.5 rounded-2xl border border-border/50 flex-1 xl:flex-none">
+            <div className="flex items-center gap-2 px-3 py-1 bg-background/50 rounded-xl">
+              <Label className="text-[9px] font-black uppercase text-muted-foreground whitespace-nowrap">Dari</Label>
+              <Input 
+                type="date" 
+                className="h-8 w-full bg-transparent border-none font-bold text-xs p-0 focus-visible:ring-0" 
+                value={dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : ''}
+                onChange={(e) => {
+                  const newDate = e.target.value ? new Date(e.target.value) : undefined;
+                  setDateRange(prev => ({ ...prev, from: newDate }));
+                  setRangePreset('custom');
+                }}
+              />
+            </div>
+            <div className="flex items-center gap-2 px-3 py-1 bg-background/50 rounded-xl">
+              <Label className="text-[9px] font-black uppercase text-muted-foreground whitespace-nowrap">Sampai</Label>
+              <Input 
+                type="date" 
+                className="h-8 w-full bg-transparent border-none font-bold text-xs p-0 focus-visible:ring-0" 
+                value={dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : ''}
+                onChange={(e) => {
+                  const newDate = e.target.value ? new Date(e.target.value) : undefined;
+                  setDateRange(prev => ({ ...prev, to: newDate }));
+                  setRangePreset('custom');
+                }}
+              />
+            </div>
           </div>
 
           <div className="hidden xl:block h-10 w-px bg-border mx-2" />

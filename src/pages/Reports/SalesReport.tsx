@@ -110,7 +110,8 @@ export default function SalesReport() {
       let query = (supabase as any)
         .from('transactions')
         .select('*, profiles(full_name), transaction_items(*, products(name, category_id))')
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(50000);
 
       if (cashierId !== 'all') {
         query = query.eq('user_id', cashierId);
@@ -368,8 +369,8 @@ export default function SalesReport() {
       case 'last7days':
         setDateRange({ from: subDays(today, 7), to: today });
         break;
-      case 'thismonth':
-        setDateRange({ from: startOfMonth(today), to: endOfMonth(today) });
+      case 'last30days':
+        setDateRange({ from: subDays(today, 30), to: today });
         break;
     }
   };
@@ -464,7 +465,7 @@ export default function SalesReport() {
               { id: 'today', label: 'Hari Ini' },
               { id: 'yesterday', label: 'Kemarin' },
               { id: 'last7days', label: '7 Hari' },
-              { id: 'thismonth', label: 'Bulan Ini' },
+              { id: 'last30days', label: '30 Hari' },
             ].map((p) => (
               <Button
                 key={p.id}
@@ -480,36 +481,6 @@ export default function SalesReport() {
               </Button>
             ))}
             
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={rangePreset === 'custom' ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setRangePreset('custom')}
-                  className={cn(
-                    "rounded-xl h-9 px-4 font-bold gap-2 text-xs",
-                    rangePreset === 'custom' ? "gradient-primary text-white shadow-md" : "hover:bg-accent text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="h-4 w-4" /> Kustom
-                  <ChevronDown className="h-4 w-4 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 rounded-3xl overflow-hidden border-border shadow-2xl" align="end">
-                <Calendar
-                  initialFocus
-                  mode="range"
-                  defaultMonth={dateRange?.from}
-                  selected={dateRange}
-                  onSelect={(range) => {
-                      setDateRange(range);
-                      setRangePreset('custom');
-                  }}
-                  numberOfMonths={2}
-                  locale={id}
-                />
-              </PopoverContent>
-            </Popover>
           </div>
 
           <div className="hidden xl:block h-10 w-px bg-border mx-2" />

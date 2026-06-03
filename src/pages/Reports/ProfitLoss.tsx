@@ -56,6 +56,8 @@ import {
 import { cn } from "@/lib/utils";
 import { DateRange as DateRangeType } from "react-day-picker";
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import * as XLSX from 'xlsx';
 import { useReactToPrint } from 'react-to-print';
 
@@ -77,7 +79,8 @@ export default function ProfitLoss() {
       let query = (supabase as any)
         .from('transactions')
         .select('total_amount, created_at, transaction_items(price, quantity, products(category_id))')
-        .order('created_at', { ascending: true });
+        .order('created_at', { ascending: true })
+        .limit(50000);
 
       if (dateRange?.from) {
         query = query.gte('created_at', startOfDay(dateRange.from).toISOString());
@@ -99,7 +102,8 @@ export default function ProfitLoss() {
       let query = (supabase as any)
         .from('purchases')
         .select('total_amount, created_at')
-        .order('created_at', { ascending: true });
+        .order('created_at', { ascending: true })
+        .limit(50000);
 
       if (dateRange?.from) {
         query = query.gte('created_at', startOfDay(dateRange.from).toISOString());
@@ -171,8 +175,9 @@ export default function ProfitLoss() {
     const today = new Date();
     switch (preset) {
       case 'today': setDateRange({ from: today, to: today }); break;
-      case 'thismonth': setDateRange({ from: startOfMonth(today), to: endOfMonth(today) }); break;
-      // ...other presets possible
+      case 'yesterday': setDateRange({ from: subDays(today, 1), to: subDays(today, 1) }); break;
+      case 'last7days': setDateRange({ from: subDays(today, 7), to: today }); break;
+      case 'last30days': setDateRange({ from: subDays(today, 30), to: today }); break;
     }
   };
 
@@ -232,6 +237,62 @@ export default function ProfitLoss() {
           >
             <FileText className="mr-2 h-4 w-4" /> Export PDF
           </Button>
+        </div>
+      </div>
+      <div className="bg-card p-4 md:p-6 rounded-3xl border border-border space-y-4 md:space-y-6 shadow-sm">
+        <div className="flex flex-col xl:flex-row xl:items-center gap-4">
+          <div className="flex flex-wrap items-center gap-2 bg-muted/30 p-1.5 rounded-2xl border border-border/50">
+            {[
+              { id: 'today', label: 'Hari Ini' },
+              { id: 'yesterday', label: 'Kemarin' },
+              { id: 'last7days', label: '7 Hari' },
+              { id: 'last30days', label: '30 Hari' },
+            ].map((p) => (
+              <Button
+                key={p.id}
+                variant={rangePreset === p.id ? "default" : "ghost"}
+                size="sm"
+                onClick={() => handlePresetChange(p.id)}
+                className={cn(
+                  "rounded-xl h-9 font-bold px-4 transition-all text-xs",
+                  rangePreset === p.id ? "gradient-primary text-white shadow-md" : "hover:bg-accent text-muted-foreground"
+                )}
+              >
+                {p.label}
+              </Button>
+            ))}
+          </div>
+
+          <div className="hidden xl:block h-10 w-px bg-border mx-2" />
+
+          <div className="grid grid-cols-2 gap-3 bg-muted/30 p-1.5 rounded-2xl border border-border/50 flex-1 xl:flex-none">
+            <div className="flex items-center gap-2 px-3 py-1 bg-background/50 rounded-xl">
+              <Label className="text-[9px] font-black uppercase text-muted-foreground whitespace-nowrap">Dari</Label>
+              <Input 
+                type="date" 
+                className="h-8 w-full bg-transparent border-none font-bold text-xs p-0 focus-visible:ring-0" 
+                value={dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : ''}
+                onChange={(e) => {
+                  const newDate = e.target.value ? new Date(e.target.value) : undefined;
+                  setDateRange(prev => ({ ...prev, from: newDate }));
+                  setRangePreset('custom');
+                }}
+              />
+            </div>
+            <div className="flex items-center gap-2 px-3 py-1 bg-background/50 rounded-xl">
+              <Label className="text-[9px] font-black uppercase text-muted-foreground whitespace-nowrap">Sampai</Label>
+              <Input 
+                type="date" 
+                className="h-8 w-full bg-transparent border-none font-bold text-xs p-0 focus-visible:ring-0" 
+                value={dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : ''}
+                onChange={(e) => {
+                  const newDate = e.target.value ? new Date(e.target.value) : undefined;
+                  setDateRange(prev => ({ ...prev, to: newDate }));
+                  setRangePreset('custom');
+                }}
+              />
+            </div>
+          </div>
         </div>
       </div>
 

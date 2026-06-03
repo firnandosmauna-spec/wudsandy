@@ -627,7 +627,7 @@ function TemplatesForm({ initialData, onSave, isSaving }: { initialData?: any, o
            <div className="flex flex-col md:flex-row items-center gap-8 p-6 rounded-[2rem] border border-pink-100 bg-[#f0f9f1]/30">
               <div className="h-32 w-32 rounded-[2rem] bg-white flex items-center justify-center p-2 shadow-lg border border-pink-100 overflow-hidden shrink-0">
                  {webLogoUrl ? (
-                   <img src={webLogoUrl} className="h-full w-full object-contain" alt="Web Logo" />
+                   <img src={webLogoUrl} alt="Web Logo" className="h-full w-full object-contain" />
                  ) : (
                    <div className="text-4xl">🏷️</div>
                  )}

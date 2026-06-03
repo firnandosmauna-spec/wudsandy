@@ -83,7 +83,8 @@ export default function TransactionHistory() {
           customers(name),
           transaction_items(*, products(name, category_id))
         `)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .limit(50000);
 
       if (dateRange?.from) {
         query = query.gte('created_at', startOfDay(dateRange.from).toISOString());
@@ -165,8 +166,8 @@ export default function TransactionHistory() {
       case 'last7days':
         setDateRange({ from: subDays(today, 7), to: today });
         break;
-      case 'thismonth':
-        setDateRange({ from: startOfMonth(today), to: endOfMonth(today) });
+      case 'last30days':
+        setDateRange({ from: subDays(today, 30), to: today });
         break;
     }
   };
@@ -224,6 +225,40 @@ export default function TransactionHistory() {
     return filteredTransactions.reduce((sum, t) => sum + t.adjustedTotal, 0);
   }, [filteredTransactions]);
 
+  const rawTotalSales = useMemo(() => {
+    // Menghitung total kotor dari semua transaksi tanpa memfilter yang hanya bubuk kopi
+    return (transactions as any[])?.reduce((sum, t) => {
+      // Memastikan query filter manual/search juga berlaku untuk raw total
+      const matchesSearch = t.id.toLowerCase().includes(search.toLowerCase()) ||
+        (t.receipt_number && t.receipt_number.toLowerCase().includes(search.toLowerCase())) ||
+        t.payment_method.toLowerCase().includes(search.toLowerCase()) ||
+        t.profiles?.full_name?.toLowerCase().includes(search.toLowerCase()) ||
+        t.customers?.name?.toLowerCase().includes(search.toLowerCase());
+      
+      const hasManualItems = (t.transaction_items || []).some((item: any) => !item.product_id);
+      const matchesManualFilter = !showManualOnly || hasManualItems;
+
+      if (matchesSearch && matchesManualFilter) {
+        return sum + Number(t.total_amount);
+      }
+      return sum;
+    }, 0) || 0;
+  }, [transactions, search, showManualOnly]);
+
+  const rawTotalTransactions = useMemo(() => {
+    return (transactions as any[])?.filter(t => {
+      const matchesSearch = t.id.toLowerCase().includes(search.toLowerCase()) ||
+        (t.receipt_number && t.receipt_number.toLowerCase().includes(search.toLowerCase())) ||
+        t.payment_method.toLowerCase().includes(search.toLowerCase()) ||
+        t.profiles?.full_name?.toLowerCase().includes(search.toLowerCase()) ||
+        t.customers?.name?.toLowerCase().includes(search.toLowerCase());
+      
+      const hasManualItems = (t.transaction_items || []).some((item: any) => !item.product_id);
+      const matchesManualFilter = !showManualOnly || hasManualItems;
+      return matchesSearch && matchesManualFilter;
+    }).length || 0;
+  }, [transactions, search, showManualOnly]);
+
   const totalTransactions = filteredTransactions.length;
 
   return (
@@ -272,7 +307,7 @@ export default function TransactionHistory() {
               { id: 'today', label: 'Hari Ini' },
               { id: 'yesterday', label: 'Kemarin' },
               { id: 'last7days', label: '7 Hari' },
-              { id: 'thismonth', label: 'Bulan Ini' },
+              { id: 'last30days', label: '30 Hari' },
             ].map((p) => (
               <Button
                 key={p.id}
@@ -287,37 +322,6 @@ export default function TransactionHistory() {
                 {p.label}
               </Button>
             ))}
-            
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={rangePreset === 'custom' ? "default" : "ghost"}
-                  size="sm"
-                  onClick={() => setRangePreset('custom')}
-                  className={cn(
-                    "rounded-xl h-9 px-4 font-bold gap-2 text-foreground",
-                    rangePreset === 'custom' && "gradient-primary text-white"
-                  )}
-                >
-                  <CalendarIcon className="h-4 w-4" /> Custom
-                  <ChevronDown className="h-4 w-4 opacity-50" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 rounded-3xl overflow-hidden border-border" align="end">
-                <Calendar
-                  initialFocus
-                  mode="range"
-                  defaultMonth={dateRange?.from}
-                  selected={dateRange}
-                  onSelect={(range) => {
-                      setDateRange(range);
-                      setRangePreset('custom');
-                  }}
-                  numberOfMonths={2}
-                  locale={id}
-                />
-              </PopoverContent>
-            </Popover>
           </div>
 
           <div className="hidden xl:block h-10 w-px bg-border mx-2" />
@@ -373,6 +377,26 @@ export default function TransactionHistory() {
             <Navigation className={cn("h-4 w-4", showManualOnly && "animate-pulse")} />
             {showManualOnly ? "MENAMPILKAN MANUAL" : "FILTER MANUAL"}
           </Button>
+        </div>
+      </div>
+
+      {/* Summary Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="p-5 bg-card border border-border rounded-2xl shadow-sm transition-all hover:shadow-md">
+          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1" title="Termasuk penjualan bubuk kopi">Total Transaksi Kotor</p>
+          <p className="text-2xl font-black text-foreground">{rawTotalTransactions}</p>
+        </div>
+        <div className="p-5 bg-blue-500/10 border border-blue-500/20 rounded-2xl shadow-sm transition-all hover:shadow-md">
+          <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1" title="Semua penjualan, termasuk bubuk kopi">Total Omzet Kotor</p>
+          <p className="text-xl md:text-2xl font-black text-blue-600">Rp {rawTotalSales.toLocaleString('id-ID')}</p>
+        </div>
+        <div className="p-5 bg-card border border-border rounded-2xl shadow-sm transition-all hover:shadow-md">
+          <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-1" title="Transaksi yang tidak hanya berisi bubuk kopi">Trx Bersih</p>
+          <p className="text-2xl font-black text-foreground">{totalTransactions}</p>
+        </div>
+        <div className="p-5 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl shadow-sm transition-all hover:shadow-md">
+          <p className="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-1" title="Omzet setelah dikurangi penjualan bubuk kopi">Total Omzet Bersih</p>
+          <p className="text-xl md:text-2xl font-black text-emerald-600">Rp {totalSales.toLocaleString('id-ID')}</p>
         </div>
       </div>
 

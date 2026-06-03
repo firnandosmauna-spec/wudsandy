@@ -200,7 +200,7 @@ export default function Landing() {
   const hero = cms?.hero || {
     title: "cake n bake fresh from oven",
     subtitle: "Temukan berbagai pilihan menu premium yang dibuat dengan penuh kasih sayang untuk setiap momen berharga Anda.",
-    image_url: "/bakery-logo.png",
+    image_url: "/wudkopi-logo.png",
     cta_text: "Belanja Sekarang",
     secondary_cta_text: "Tentang Kami"
   };
@@ -264,12 +264,12 @@ export default function Landing() {
           >
             <div className="h-full w-full flex items-center justify-center overflow-hidden">
               <img 
-                src={cms?.settings?.web_logo_url || config?.logo_url || "/bakery-logo.png"} 
+                src={cms?.settings?.web_logo_url || config?.logo_url || "/wudkopi-logo.png"} 
                 alt="Logo" 
                 className="w-full h-full object-contain" 
                 onError={(e) => {
                   const target = e.target as HTMLImageElement;
-                  target.src = "/bakery-logo.png";
+                  target.src = "/wudkopi-logo.png";
                 }}
               />
             </div>
@@ -737,7 +737,7 @@ export default function Landing() {
             <div className="flex items-center gap-3">
               <div className="h-20 w-20 md:h-28 md:w-28 bg-transparent flex items-center justify-center p-1">
                 <div className="h-full w-full flex items-center justify-center overflow-hidden">
-                  <img src={cms?.settings?.web_logo_url || config?.logo_url || "/bakery-logo.png"} alt="Logo" className="h-full w-full object-contain" />
+                  <img src={cms?.settings?.web_logo_url || config?.logo_url || "/wudkopi-logo.png"} alt="Logo" className="h-full w-full object-contain" />
                 </div>
               </div>
             </div>
