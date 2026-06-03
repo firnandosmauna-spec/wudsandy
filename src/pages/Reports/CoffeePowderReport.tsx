@@ -330,96 +330,140 @@ export default function CoffeePowderReport() {
 
   return (
     <div className="space-y-6 animate-fade-in pb-10">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-2xl gradient-primary flex items-center justify-center shadow-lg">
-                <Coffee className="h-6 w-6 text-white" />
-            </div>
-            <div>
-                <h1 className="text-3xl font-black text-foreground uppercase tracking-tighter">Laporan Bubuk Kopi</h1>
-                <p className="text-muted-foreground text-sm font-medium">Rekapitulasi penjualan produk kategori Bubuk Kopi.</p>
-            </div>
-        </div>
-        <div className="flex gap-2">
-          <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-            <DialogTrigger asChild>
-              <Button className="gradient-primary text-white rounded-xl font-bold h-11">
-                <Plus className="mr-2 h-4 w-4" /> Tambah Penjualan
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-md rounded-3xl border-border bg-card">
-              <DialogHeader>
-                <DialogTitle className="flex items-center gap-2"><Coffee className="h-5 w-5" /> Catat Penjualan Manual</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 py-4">
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase text-muted-foreground mr-1">Pilih Produk</label>
-                  <Select onValueChange={(v) => {
-                    const p = coffeeProducts.find(x => x.id === v);
-                    setNewItem({ ...newItem, product_id: v, price: p?.price || 0 });
-                  }}>
-                    <SelectTrigger className="rounded-xl border-border bg-secondary/50">
-                      <SelectValue placeholder="Pilih Jenis Bubuk" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {coffeeProducts.map(p => (
-                        <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase text-muted-foreground mr-1">Jumlah (Qty)</label>
-                    <Input 
-                      type="number" 
-                      className="rounded-xl border-border bg-secondary/50" 
-                      value={newItem.quantity}
-                      onChange={(e) => setNewItem({ ...newItem, quantity: parseInt(e.target.value) || 0 })}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-[10px] font-black uppercase text-muted-foreground mr-1">Harga (IDR)</label>
-                    <Input 
-                      type="number" 
-                      className="rounded-xl border-border bg-secondary/50" 
-                      value={newItem.price}
-                      onChange={(e) => setNewItem({ ...newItem, price: parseInt(e.target.value) || 0 })}
-                    />
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase text-muted-foreground mr-1">Tanggal</label>
-                  <Input 
-                    type="date" 
-                    className="rounded-xl border-border bg-secondary/50" 
-                    value={newItem.date}
-                    onChange={(e) => setNewItem({ ...newItem, date: e.target.value })}
-                  />
-                </div>
+      <div className="flex flex-col xl:flex-row xl:items-start justify-between gap-6 mb-2">
+        <div className="space-y-4">
+          <div className="flex items-center gap-3">
+              <div className="h-10 w-10 md:h-12 md:w-12 rounded-xl gradient-primary flex items-center justify-center shadow-lg">
+                  <Coffee className="h-5 w-5 md:h-6 md:w-6 text-white" />
               </div>
-              <DialogFooter>
-                <Button className="w-full gradient-primary text-white rounded-xl h-12 font-black" onClick={handleAddSale} disabled={createMutation.isPending}>
-                  {createMutation.isPending ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <Save className="h-5 w-5 mr-2" />}
-                  SIMPAN PENJUALAN
+              <div>
+                  <h1 className="text-2xl md:text-3xl font-black tracking-tighter text-foreground uppercase italic leading-none">Laporan Bubuk</h1>
+                  <p className="text-muted-foreground text-[10px] md:text-xs font-bold uppercase tracking-widest opacity-70">Rekapitulasi penjualan produk bubuk kopi.</p>
+              </div>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
+              <DialogTrigger asChild>
+                <Button className="gradient-primary text-white rounded-xl h-10 px-4 font-black shadow-sm transition-all">
+                  <Plus className="mr-2 h-3.5 w-3.5" /> Tambah Penjualan
                 </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-          
-          <Button variant="outline" className="rounded-xl border-border bg-card font-black h-11" onClick={() => setIsPreviewOpen(true)}>
-            <Eye className="mr-2 h-4 w-4" /> Preview
-          </Button>
-          <Button variant="outline" className="rounded-xl border-border bg-card font-black h-11" onClick={handleExportExcel}>
-            <TableIcon className="mr-2 h-4 w-4" /> Excel
-          </Button>
-          <Button 
-            variant="outline"
-            className="rounded-xl border-red-200 bg-red-50/50 text-red-600 hover:bg-red-50 hover:text-red-700 pos-shadow font-black h-11"
-            onClick={() => handlePrint()}
-          >
-            <FileText className="mr-2 h-4 w-4" /> Export PDF
-          </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-md rounded-3xl border-border bg-card">
+                <DialogHeader className="bg-primary/5 p-6 border-b border-border/50">
+                  <DialogTitle className="flex items-center gap-2 text-foreground uppercase tracking-widest font-black">
+                    <Coffee className="h-5 w-5" /> Catat Penjualan Bubuk
+                  </DialogTitle>
+                </DialogHeader>
+                <div className="p-6 space-y-4">
+                  <div className="space-y-2">
+                    <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Pilih Produk</Label>
+                    <Select onValueChange={(val) => {
+                        const product = coffeeProducts.find((p: any) => p.id === val);
+                        if (product) {
+                            setNewItem({...newItem, product_id: product.id, product_name: product.name, price: product.price});
+                        }
+                    }}>
+                      <SelectTrigger className="w-full rounded-2xl bg-secondary/50 h-12">
+                        <SelectValue placeholder="Pilih kopi bubuk..." />
+                      </SelectTrigger>
+                      <SelectContent className="rounded-2xl border-border bg-card">
+                        {coffeeProducts.map((p: any) => (
+                            <SelectItem key={p.id} value={p.id}>{p.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Harga Satuan</Label>
+                        <Input type="number" value={newItem.price} onChange={(e) => setNewItem({...newItem, price: parseInt(e.target.value) || 0})} className="rounded-2xl bg-secondary/50 h-12" />
+                    </div>
+                    <div className="space-y-2">
+                        <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Qty (Pack)</Label>
+                        <Input type="number" value={newItem.quantity} onChange={(e) => setNewItem({...newItem, quantity: parseInt(e.target.value) || 0})} className="rounded-2xl bg-secondary/50 h-12" />
+                    </div>
+                  </div>
+                </div>
+                <DialogFooter>
+                  <Button className="w-full gradient-primary text-white rounded-xl h-12 font-black" onClick={handleAddSale} disabled={createMutation.isPending}>
+                    {createMutation.isPending ? <Loader2 className="h-5 w-5 animate-spin mr-2" /> : <Save className="h-5 w-5 mr-2" />}
+                    SIMPAN PENJUALAN
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+            
+            <Button variant="outline" className="rounded-xl border-border bg-card shadow-sm font-bold text-xs hover:bg-accent transition-all h-10 px-3" onClick={() => setIsPreviewOpen(true)}>
+              <Eye className="mr-2 h-3.5 w-3.5 text-primary" /> Preview
+            </Button>
+            <Button variant="outline" className="rounded-xl border-border bg-card shadow-sm font-bold text-xs hover:bg-accent transition-all h-10 px-3" onClick={handleExportExcel}>
+              <TableIcon className="mr-2 h-3.5 w-3.5 text-emerald-500" /> Excel
+            </Button>
+            <Button 
+              variant="outline"
+              className="rounded-xl border-red-200 bg-red-50/50 text-red-600 hover:bg-red-50 hover:text-red-700 shadow-sm font-bold text-xs transition-all h-10 px-3"
+              onClick={() => handlePrint()}
+            >
+              <FileText className="mr-2 h-3.5 w-3.5 text-red-500" /> Export PDF
+            </Button>
+          </div>
+        </div>
+
+        <div className="bg-card p-3 rounded-2xl border border-border shadow-sm w-full xl:w-auto">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <div className="flex flex-wrap items-center gap-1.5 bg-muted/30 p-1 rounded-xl border border-border/50">
+              {[
+                { id: 'today', label: 'Hari Ini' },
+                { id: 'yesterday', label: 'Kemarin' },
+                { id: 'last7days', label: '7 Hari' },
+                { id: 'last30days', label: '30 Hari' },
+              ].map((p) => (
+                <Button
+                  key={p.id}
+                  variant={rangePreset === p.id ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => handlePresetChange(p.id)}
+                  className={cn(
+                    "rounded-lg h-8 font-bold px-3 transition-all text-[10px] sm:text-xs",
+                    rangePreset === p.id ? "gradient-primary text-white shadow-md" : "hover:bg-accent text-muted-foreground"
+                  )}
+                >
+                  {p.label}
+                </Button>
+              ))}
+            </div>
+
+            <div className="hidden sm:block h-8 w-px bg-border mx-1" />
+
+            <div className="grid grid-cols-2 gap-2 bg-muted/30 p-1 rounded-xl border border-border/50 flex-1 sm:flex-none">
+              <div className="flex items-center gap-2 px-2 py-1 bg-background/50 rounded-lg">
+                <Label className="text-[9px] font-black uppercase text-muted-foreground whitespace-nowrap">Dari</Label>
+                <Input 
+                  type="date" 
+                  className="h-7 w-full bg-transparent border-none font-bold text-[10px] sm:text-xs p-0 focus-visible:ring-0" 
+                  value={dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : ''}
+                  onChange={(e) => {
+                    const newDate = e.target.value ? new Date(e.target.value) : undefined;
+                    setDateRange(prev => ({ ...prev, from: newDate }));
+                    setRangePreset('custom');
+                  }}
+                />
+              </div>
+              <div className="flex items-center gap-2 px-2 py-1 bg-background/50 rounded-lg">
+                <Label className="text-[9px] font-black uppercase text-muted-foreground whitespace-nowrap">Sampai</Label>
+                <Input 
+                  type="date" 
+                  className="h-7 w-full bg-transparent border-none font-bold text-[10px] sm:text-xs p-0 focus-visible:ring-0" 
+                  value={dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : ''}
+                  onChange={(e) => {
+                    const newDate = e.target.value ? new Date(e.target.value) : undefined;
+                    setDateRange(prev => ({ ...prev, to: newDate }));
+                    setRangePreset('custom');
+                  }}
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -454,104 +498,16 @@ export default function CoffeePowderReport() {
           </div>
       </div>
 
-      <div className="bg-card p-4 md:p-6 rounded-3xl border border-border space-y-4 md:space-y-6 shadow-sm">
-        <div className="flex flex-col xl:flex-row xl:items-center gap-4">
-          <div className="flex flex-wrap items-center gap-2 bg-muted/30 p-1.5 rounded-2xl border border-border/50">
-            {[
-              { id: 'today', label: 'Hari Ini' },
-              { id: 'yesterday', label: 'Kemarin' },
-              { id: 'last7days', label: '7 Hari' },
-              { id: 'last30days', label: '30 Hari' },
-            ].map((p) => (
-              <Button
-                key={p.id}
-                variant={rangePreset === p.id ? "default" : "ghost"}
-                size="sm"
-                onClick={() => handlePresetChange(p.id)}
-                className={cn(
-                  "rounded-xl h-9 font-bold px-4 transition-all text-xs",
-                  rangePreset === p.id ? "gradient-primary text-white shadow-md" : "hover:bg-accent text-muted-foreground"
-                )}
-              >
-                {p.label}
-              </Button>
-            ))}
-            
-          </div>
-
-          <div className="hidden xl:block h-10 w-px bg-border mx-2" />
-
-          <div className="grid grid-cols-2 gap-3 bg-muted/30 p-1.5 rounded-2xl border border-border/50 flex-1 xl:flex-none">
-            <div className="flex items-center gap-2 px-3 py-1 bg-background/50 rounded-xl">
-              <Label className="text-[9px] font-black uppercase text-muted-foreground whitespace-nowrap">Dari</Label>
-              <Input 
-                type="date" 
-                className="h-8 w-full bg-transparent border-none font-bold text-xs p-0 focus-visible:ring-0" 
-                value={dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : ''}
-                onChange={(e) => {
-                  const newDate = e.target.value ? new Date(e.target.value) : undefined;
-                  setDateRange(prev => ({ ...prev, from: newDate }));
-                  setRangePreset('custom');
-                }}
-              />
-            </div>
-            <div className="flex items-center gap-2 px-3 py-1 bg-background/50 rounded-xl">
-              <Label className="text-[9px] font-black uppercase text-muted-foreground whitespace-nowrap">Sampai</Label>
-              <Input 
-                type="date" 
-                className="h-8 w-full bg-transparent border-none font-bold text-xs p-0 focus-visible:ring-0" 
-                value={dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : ''}
-                onChange={(e) => {
-                  const newDate = e.target.value ? new Date(e.target.value) : undefined;
-                  setDateRange(prev => ({ ...prev, to: newDate }));
-                  setRangePreset('custom');
-                }}
-              />
-            </div>
-          </div>
-
-          <div className="hidden xl:block h-10 w-px bg-border mx-2" />
-
-          <div className="grid grid-cols-2 gap-3 bg-muted/30 p-1.5 rounded-2xl border border-border/50 flex-1 xl:flex-none">
-            <div className="flex items-center gap-2 px-3 py-1 bg-background/50 rounded-xl">
-              <Label className="text-[9px] font-black uppercase text-muted-foreground whitespace-nowrap">Dari</Label>
-              <Input 
-                type="date" 
-                className="h-8 w-full bg-transparent border-none font-bold text-xs p-0 focus-visible:ring-0" 
-                value={dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : ''}
-                onChange={(e) => {
-                  const newDate = e.target.value ? new Date(e.target.value) : undefined;
-                  setDateRange(prev => ({ ...prev, from: newDate }));
-                  setRangePreset('custom');
-                }}
-              />
-            </div>
-            <div className="flex items-center gap-2 px-3 py-1 bg-background/50 rounded-xl">
-              <Label className="text-[9px] font-black uppercase text-muted-foreground whitespace-nowrap">Sampai</Label>
-              <Input 
-                type="date" 
-                className="h-8 w-full bg-transparent border-none font-bold text-xs p-0 focus-visible:ring-0" 
-                value={dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : ''}
-                onChange={(e) => {
-                  const newDate = e.target.value ? new Date(e.target.value) : undefined;
-                  setDateRange(prev => ({ ...prev, to: newDate }));
-                  setRangePreset('custom');
-                }}
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-            <Input 
-              placeholder="Cari nama produk..." 
-              value={search} 
-              onChange={(e) => setSearch(e.target.value)} 
-              className="pl-12 bg-secondary/50 border-border rounded-2xl h-12 text-sm"
-            />
-          </div>
+      {/* Filters */}
+      <div className="flex flex-col md:flex-row gap-3 mb-2 mt-4">
+        <div className="relative flex-1">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <Input 
+            placeholder="Cari nama produk bubuk kopi..." 
+            value={search} 
+            onChange={(e) => setSearch(e.target.value)} 
+            className="pl-11 bg-card border-border shadow-sm rounded-xl h-11 text-sm font-semibold"
+          />
         </div>
       </div>
 

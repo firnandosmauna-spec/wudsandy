@@ -28,12 +28,8 @@ import {
   ResponsiveContainer 
 } from 'recharts';
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { DateRange } from "react-day-picker";
 
@@ -161,11 +157,11 @@ export default function Dashboard() {
         const yesterday = subDays(today, 1);
         setDateRange({ from: yesterday, to: yesterday });
         break;
-      case 'last7Days':
+      case 'last7days':
         setDateRange({ from: subDays(today, 7), to: today });
         break;
-      case 'thisMonth':
-        setDateRange({ from: startOfMonth(today), to: endOfMonth(today) });
+      case 'last30days':
+        setDateRange({ from: subDays(today, 30), to: today });
         break;
     }
   };
@@ -181,68 +177,61 @@ export default function Dashboard() {
           <p className="text-muted-foreground text-[10px] md:text-xs font-bold uppercase tracking-widest opacity-70">Perform Real-time {storeName}</p>
         </div>
 
-        <div className="flex flex-wrap items-center gap-1.5 bg-card/30 p-1 rounded-2xl border border-border/50">
-          {[
-            { id: 'today', label: 'Hari Ini' },
-            { id: 'yesterday', label: 'Kemarin' },
-            { id: 'last7Days', label: '7 Hari' },
-            { id: 'thisMonth', label: 'Bulan Ini' },
-          ].map((p) => (
-            <Button
-              key={p.id}
-              variant={rangePreset === p.id ? "default" : "ghost"}
-              size="sm"
-              onClick={() => handlePresetChange(p.id)}
-              className={cn(
-                "rounded-xl h-9 font-semibold transition-all",
-                rangePreset === p.id ? "gradient-primary shadow-sm" : "hover:bg-accent"
-              )}
-            >
-              {p.label}
-            </Button>
-          ))}
-          
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant={rangePreset === 'custom' ? "default" : "outline"}
-                size="sm"
-                onClick={() => setRangePreset('custom')}
-                className={cn(
-                  "rounded-xl h-9 border-border/60 font-semibold gap-2",
-                  rangePreset === 'custom' && "gradient-primary border-none"
-                )}
-              >
-                <CalendarIcon className="h-4 w-4" />
-                {dateRange?.from ? (
-                  dateRange.to ? (
-                    <>
-                      {format(dateRange.from, "dd MMM", { locale: id })} - {format(dateRange.to, "dd MMM", { locale: id })}
-                    </>
-                  ) : (
-                    format(dateRange.from, "dd MMM", { locale: id })
-                  )
-                ) : (
-                  <span>Pilih Tanggal</span>
-                )}
-                <ChevronDown className="h-3.5 w-3.5 opacity-50" />
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0 rounded-3xl overflow-hidden border-border" align="end">
-              <Calendar
-                initialFocus
-                mode="range"
-                defaultMonth={dateRange?.from}
-                selected={dateRange}
-                onSelect={(range) => {
-                    setDateRange(range);
+        <div className="bg-card p-3 rounded-2xl border border-border shadow-sm w-full xl:w-auto">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <div className="flex flex-wrap items-center gap-1.5 bg-muted/30 p-1 rounded-xl border border-border/50">
+              {[
+                { id: 'today', label: 'Hari Ini' },
+                { id: 'yesterday', label: 'Kemarin' },
+                { id: 'last7days', label: '7 Hari' },
+                { id: 'last30days', label: '30 Hari' },
+              ].map((p) => (
+                <Button
+                  key={p.id}
+                  variant={rangePreset === p.id ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => handlePresetChange(p.id)}
+                  className={cn(
+                    "rounded-lg h-8 font-bold px-3 transition-all text-[10px] sm:text-xs",
+                    rangePreset === p.id ? "gradient-primary text-white shadow-md" : "hover:bg-accent text-muted-foreground"
+                  )}
+                >
+                  {p.label}
+                </Button>
+              ))}
+            </div>
+
+            <div className="hidden sm:block h-8 w-px bg-border mx-1" />
+
+            <div className="grid grid-cols-2 gap-2 bg-muted/30 p-1 rounded-xl border border-border/50 flex-1 sm:flex-none">
+              <div className="flex items-center gap-2 px-2 py-1 bg-background/50 rounded-lg">
+                <Label className="text-[9px] font-black uppercase text-muted-foreground whitespace-nowrap">Dari</Label>
+                <Input 
+                  type="date" 
+                  className="h-7 w-full bg-transparent border-none font-bold text-[10px] sm:text-xs p-0 focus-visible:ring-0" 
+                  value={dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : ''}
+                  onChange={(e) => {
+                    const newDate = e.target.value ? new Date(e.target.value) : undefined;
+                    setDateRange(prev => ({ ...prev, from: newDate }));
                     setRangePreset('custom');
-                }}
-                numberOfMonths={2}
-                locale={id}
-              />
-            </PopoverContent>
-          </Popover>
+                  }}
+                />
+              </div>
+              <div className="flex items-center gap-2 px-2 py-1 bg-background/50 rounded-lg">
+                <Label className="text-[9px] font-black uppercase text-muted-foreground whitespace-nowrap">Sampai</Label>
+                <Input 
+                  type="date" 
+                  className="h-7 w-full bg-transparent border-none font-bold text-[10px] sm:text-xs p-0 focus-visible:ring-0" 
+                  value={dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : ''}
+                  onChange={(e) => {
+                    const newDate = e.target.value ? new Date(e.target.value) : undefined;
+                    setDateRange(prev => ({ ...prev, to: newDate }));
+                    setRangePreset('custom');
+                  }}
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 

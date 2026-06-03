@@ -34,9 +34,12 @@ const menuItems = [
 export default function StoreAdminLayout({ children }: StoreAdminLayoutProps) {
   const { user, loading, signOut } = useAuth();
   const { data: config } = useStoreConfig();
+  const [logoError, setLogoError] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const navigate = useNavigate();
+
+  const logoSrc = logoError ? "/wudkopi-logo.png" : (config?.logo_url || "/wudkopi-logo.png");
 
   if (loading) return null;
   if (!user) return <Navigate to="/login" replace />;
@@ -134,7 +137,11 @@ export default function StoreAdminLayout({ children }: StoreAdminLayoutProps) {
               <span className="hidden sm:inline">Buka Toko</span>
             </Button>
             <div className="h-10 w-10 rounded-full border-2 border-[#ec4899]/20 overflow-hidden bg-white p-0.5">
-               <img src={config?.logo_url || "/wudkopi-logo.png"} className="h-full w-full object-cover rounded-full" />
+               <img 
+                 src={logoSrc} 
+                 className="h-full w-full object-cover rounded-full" 
+                 onError={() => setLogoError(true)}
+               />
             </div>
           </div>
         </header>

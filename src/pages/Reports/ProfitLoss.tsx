@@ -218,79 +218,82 @@ export default function ProfitLoss() {
 
   return (
     <div className="space-y-8 animate-fade-in pb-10">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground font-black uppercase tracking-tighter">Laporan Laba Rugi</h1>
-          <p className="text-muted-foreground mt-1">Analisa performa keuangan dan keuntungan bisnis Anda.</p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" className="rounded-xl border-border bg-card font-black h-11" onClick={() => setIsPreviewOpen(true)}>
-            <Eye className="mr-2 h-4 w-4" /> Preview
-          </Button>
-          <Button variant="outline" className="rounded-xl border-border bg-card font-black h-11" onClick={handleExportExcel}>
-            <TableIcon className="mr-2 h-4 w-4" /> Export Excel
-          </Button>
-          <Button 
-            variant="outline"
-            className="rounded-xl border-red-200 bg-red-50/50 text-red-600 hover:bg-red-50 hover:text-red-700 pos-shadow font-black h-11"
-            onClick={() => handlePrint()}
-          >
-            <FileText className="mr-2 h-4 w-4" /> Export PDF
-          </Button>
-        </div>
-      </div>
-      <div className="bg-card p-4 md:p-6 rounded-3xl border border-border space-y-4 md:space-y-6 shadow-sm">
-        <div className="flex flex-col xl:flex-row xl:items-center gap-4">
-          <div className="flex flex-wrap items-center gap-2 bg-muted/30 p-1.5 rounded-2xl border border-border/50">
-            {[
-              { id: 'today', label: 'Hari Ini' },
-              { id: 'yesterday', label: 'Kemarin' },
-              { id: 'last7days', label: '7 Hari' },
-              { id: 'last30days', label: '30 Hari' },
-            ].map((p) => (
-              <Button
-                key={p.id}
-                variant={rangePreset === p.id ? "default" : "ghost"}
-                size="sm"
-                onClick={() => handlePresetChange(p.id)}
-                className={cn(
-                  "rounded-xl h-9 font-bold px-4 transition-all text-xs",
-                  rangePreset === p.id ? "gradient-primary text-white shadow-md" : "hover:bg-accent text-muted-foreground"
-                )}
-              >
-                {p.label}
-              </Button>
-            ))}
+      <div className="flex flex-col xl:flex-row xl:items-start justify-between gap-6">
+        <div className="space-y-4">
+          <div>
+            <h1 className="text-3xl font-bold text-foreground font-black uppercase tracking-tighter">Laporan Laba Rugi</h1>
+            <p className="text-muted-foreground mt-1 text-sm">Analisa performa keuangan dan keuntungan bisnis Anda.</p>
           </div>
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" className="rounded-xl border-border bg-card font-black h-10 text-xs shadow-sm hover:border-primary/50" onClick={() => setIsPreviewOpen(true)}>
+              <Eye className="mr-2 h-3.5 w-3.5" /> Preview
+            </Button>
+            <Button variant="outline" className="rounded-xl border-border bg-card font-black h-10 text-xs shadow-sm hover:border-primary/50" onClick={handleExportExcel}>
+              <TableIcon className="mr-2 h-3.5 w-3.5" /> Export Excel
+            </Button>
+            <Button 
+              variant="outline"
+              className="rounded-xl border-red-200 bg-red-50/50 text-red-600 hover:bg-red-50 hover:text-red-700 font-black h-10 text-xs shadow-sm"
+              onClick={() => handlePrint()}
+            >
+              <FileText className="mr-2 h-3.5 w-3.5" /> Export PDF
+            </Button>
+          </div>
+        </div>
 
-          <div className="hidden xl:block h-10 w-px bg-border mx-2" />
-
-          <div className="grid grid-cols-2 gap-3 bg-muted/30 p-1.5 rounded-2xl border border-border/50 flex-1 xl:flex-none">
-            <div className="flex items-center gap-2 px-3 py-1 bg-background/50 rounded-xl">
-              <Label className="text-[9px] font-black uppercase text-muted-foreground whitespace-nowrap">Dari</Label>
-              <Input 
-                type="date" 
-                className="h-8 w-full bg-transparent border-none font-bold text-xs p-0 focus-visible:ring-0" 
-                value={dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : ''}
-                onChange={(e) => {
-                  const newDate = e.target.value ? new Date(e.target.value) : undefined;
-                  setDateRange(prev => ({ ...prev, from: newDate }));
-                  setRangePreset('custom');
-                }}
-              />
+        <div className="bg-card p-3 rounded-2xl border border-border shadow-sm w-full xl:w-auto">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <div className="flex flex-wrap items-center gap-1.5 bg-muted/30 p-1 rounded-xl border border-border/50">
+              {[
+                { id: 'today', label: 'Hari Ini' },
+                { id: 'yesterday', label: 'Kemarin' },
+                { id: 'last7days', label: '7 Hari' },
+                { id: 'last30days', label: '30 Hari' },
+              ].map((p) => (
+                <Button
+                  key={p.id}
+                  variant={rangePreset === p.id ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => handlePresetChange(p.id)}
+                  className={cn(
+                    "rounded-lg h-8 font-bold px-3 transition-all text-[10px] sm:text-xs",
+                    rangePreset === p.id ? "gradient-primary text-white shadow-md" : "hover:bg-accent text-muted-foreground"
+                  )}
+                >
+                  {p.label}
+                </Button>
+              ))}
             </div>
-            <div className="flex items-center gap-2 px-3 py-1 bg-background/50 rounded-xl">
-              <Label className="text-[9px] font-black uppercase text-muted-foreground whitespace-nowrap">Sampai</Label>
-              <Input 
-                type="date" 
-                className="h-8 w-full bg-transparent border-none font-bold text-xs p-0 focus-visible:ring-0" 
-                value={dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : ''}
-                onChange={(e) => {
-                  const newDate = e.target.value ? new Date(e.target.value) : undefined;
-                  setDateRange(prev => ({ ...prev, to: newDate }));
-                  setRangePreset('custom');
-                }}
-              />
+
+            <div className="hidden sm:block h-8 w-px bg-border mx-1" />
+
+            <div className="grid grid-cols-2 gap-2 bg-muted/30 p-1 rounded-xl border border-border/50 flex-1 sm:flex-none">
+              <div className="flex items-center gap-2 px-2 py-1 bg-background/50 rounded-lg">
+                <Label className="text-[9px] font-black uppercase text-muted-foreground whitespace-nowrap">Dari</Label>
+                <Input 
+                  type="date" 
+                  className="h-7 w-full bg-transparent border-none font-bold text-[10px] sm:text-xs p-0 focus-visible:ring-0" 
+                  value={dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : ''}
+                  onChange={(e) => {
+                    const newDate = e.target.value ? new Date(e.target.value) : undefined;
+                    setDateRange(prev => ({ ...prev, from: newDate }));
+                    setRangePreset('custom');
+                  }}
+                />
+              </div>
+              <div className="flex items-center gap-2 px-2 py-1 bg-background/50 rounded-lg">
+                <Label className="text-[9px] font-black uppercase text-muted-foreground whitespace-nowrap">Sampai</Label>
+                <Input 
+                  type="date" 
+                  className="h-7 w-full bg-transparent border-none font-bold text-[10px] sm:text-xs p-0 focus-visible:ring-0" 
+                  value={dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : ''}
+                  onChange={(e) => {
+                    const newDate = e.target.value ? new Date(e.target.value) : undefined;
+                    setDateRange(prev => ({ ...prev, to: newDate }));
+                    setRangePreset('custom');
+                  }}
+                />
+              </div>
             </div>
           </div>
         </div>

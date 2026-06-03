@@ -113,31 +113,33 @@ export default function ShiftHistory() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground font-black uppercase tracking-tighter">Shift Kasir</h1>
-          <p className="text-muted-foreground mt-1">Pantau sesi kerja kasir dan rekonsiliasi uang tunai secara riil-time.</p>
-        </div>
-        <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            className="rounded-xl border-border bg-card font-black"
-            onClick={() => setIsPreviewOpen(true)}
-            disabled={isLoading || !filteredShifts?.length}
-          >
-            <Eye className="mr-2 h-4 w-4" /> Preview
-          </Button>
-          <Button 
-            variant="outline"
-            className="rounded-xl border-red-200 bg-red-50/50 text-red-600 hover:bg-red-50 hover:text-red-700 font-black"
-            onClick={() => {
-              setIsPreviewOpen(true);
-              setTimeout(() => handlePrint(), 500);
-            }}
-            disabled={isLoading || !filteredShifts?.length}
-          >
-            <FileText className="mr-2 h-4 w-4" /> Export PDF
-          </Button>
+      <div className="flex flex-col xl:flex-row xl:items-start justify-between gap-6 mb-2">
+        <div className="space-y-4">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-black tracking-tighter text-foreground uppercase italic leading-none">Shift Kasir</h1>
+            <p className="text-muted-foreground text-[10px] md:text-xs font-bold uppercase tracking-widest opacity-70">Pantau sesi kerja kasir dan rekonsiliasi uang tunai secara riil-time.</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button 
+              variant="outline" 
+              className="rounded-xl border-border bg-card shadow-sm font-bold text-xs hover:bg-accent transition-all h-10 px-3"
+              onClick={() => setIsPreviewOpen(true)}
+              disabled={isLoading || !filteredShifts?.length}
+            >
+              <Eye className="mr-2 h-3.5 w-3.5 text-primary" /> Preview
+            </Button>
+            <Button 
+              variant="outline"
+              className="rounded-xl border-red-200 bg-red-50/50 text-red-600 hover:bg-red-50 hover:text-red-700 shadow-sm font-bold text-xs transition-all h-10 px-3"
+              onClick={() => {
+                setIsPreviewOpen(true);
+                setTimeout(() => handlePrint(), 500);
+              }}
+              disabled={isLoading || !filteredShifts?.length}
+            >
+              <FileText className="mr-2 h-3.5 w-3.5 text-red-500" /> Export PDF
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -185,34 +187,34 @@ export default function ShiftHistory() {
         </div>
       </div>
 
-      {/* Filter and Stats */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 bg-card p-4 rounded-2xl border border-border shadow-sm">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      {/* Filter */}
+      <div className="flex flex-col md:flex-row gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input 
             placeholder="Cari kasir atau ID..." 
-            className="pl-10 bg-background border-border rounded-xl h-11"
+            className="pl-11 bg-card border-border shadow-sm rounded-xl h-11 text-sm font-semibold"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
         
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="bg-background border-border rounded-xl h-11">
+          <SelectTrigger className="bg-card border-border shadow-sm rounded-xl h-11 w-full md:w-[180px] font-semibold">
             <SelectValue placeholder="Semua Status" />
           </SelectTrigger>
-          <SelectContent className="bg-card border-border">
+          <SelectContent className="bg-card border-border rounded-xl">
             <SelectItem value="all">Semua Status</SelectItem>
             <SelectItem value="open">Terbuka (Aktif)</SelectItem>
             <SelectItem value="closed">Ditutup</SelectItem>
           </SelectContent>
         </Select>
 
-        <div className="relative">
-          <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <div className="relative w-full md:w-[200px]">
+          <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input 
             type="date"
-            className="pl-10 bg-background border-border rounded-xl h-11"
+            className="pl-11 bg-card border-border shadow-sm rounded-xl h-11 text-sm font-semibold"
             value={dateFilter}
             onChange={(e) => setDateFilter(e.target.value)}
           />
@@ -221,9 +223,9 @@ export default function ShiftHistory() {
         <Button 
           variant="outline" 
           onClick={() => {setSearch(''); setStatusFilter('all'); setDateFilter('');}}
-          className="rounded-xl h-11 border-border text-xs font-semibold uppercase tracking-wider"
+          className="rounded-xl h-11 border-border bg-card shadow-sm text-xs font-bold uppercase tracking-widest hover:bg-accent px-6"
         >
-            Reset Filter
+            Reset
         </Button>
       </div>
 

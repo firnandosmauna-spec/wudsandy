@@ -226,219 +226,221 @@ export default function Products() {
 
   return (
     <div className="space-y-6 animate-fade-in">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-black text-[#5d4037] uppercase tracking-tight">Kelola Produk</h1>
-          <p className="text-[#ec4899] mt-1 font-bold text-xs uppercase tracking-widest">Daftar semua produk dan pengaturan harga.</p>
-        </div>
-        <Dialog open={isAddOpen || !!editingProduct} onOpenChange={(open) => {
-          if (!open) {
-            setIsAddOpen(false);
-            setEditingProduct(null);
-            resetForm();
-          }
-        }}>
-          <div className="flex gap-2">
-            <Button 
-              variant="outline" 
-              onClick={downloadTemplate}
-              className="rounded-xl border-pink-100 hover:bg-pink-50 gap-2 hidden sm:flex text-[#5d4037]"
-            >
-              <Download className="h-4 w-4" />
-              Template
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={() => document.getElementById('product-upload')?.click()}
-              className="rounded-xl border-pink-100 hover:bg-pink-50 gap-2 text-[#5d4037]"
-            >
-              <Upload className="h-4 w-4" />
-              Impor
-              <input 
-                id="product-upload" 
-                type="file" 
-                accept=".xlsx, .xls, .csv" 
-                className="hidden" 
-                onChange={handleFileUpload} 
-              />
-            </Button>
-            <DialogTrigger asChild>
-              <Button onClick={() => setIsAddOpen(true)} className="bg-[#ec4899] hover:bg-[#db2777] text-white font-semibold rounded-xl shadow-lg shadow-pink-100">
-                <Plus className="mr-2 h-4 w-4" /> Tambah Produk
-              </Button>
-            </DialogTrigger>
+      <div className="flex flex-col xl:flex-row xl:items-start justify-between gap-6 mb-2">
+        <div className="space-y-4">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-black tracking-tighter text-[#5d4037] uppercase italic leading-none">Kelola Produk</h1>
+            <p className="text-[#ec4899] text-[10px] md:text-xs font-bold uppercase tracking-widest opacity-70">Daftar semua produk dan pengaturan harga.</p>
           </div>
-          <DialogContent className="sm:max-w-[425px] bg-white border-pink-100">
-            <DialogHeader>
-              <DialogTitle className="text-[#5d4037] font-black uppercase">
-                {editingProduct ? 'Edit Produk' : 'Tambah Produk Baru'}
-              </DialogTitle>
-            </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4 pt-4">
-              <div className="space-y-2">
-                <Label htmlFor="name" className="text-[#ec4899] font-bold text-[10px] uppercase tracking-widest">Nama Produk</Label>
-                <Input
-                  id="name"
-                  value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  required
-                  className="bg-white border-pink-100 rounded-xl h-11 text-[#5d4037]"
+          <Dialog open={isAddOpen || !!editingProduct} onOpenChange={(open) => {
+            if (!open) {
+              setIsAddOpen(false);
+              setEditingProduct(null);
+              resetForm();
+            }
+          }}>
+            <div className="flex flex-wrap gap-2">
+              <Button 
+                variant="outline" 
+                onClick={downloadTemplate}
+                className="rounded-xl border-pink-100 hover:bg-pink-50 gap-2 hidden sm:flex text-[#5d4037] font-bold text-xs h-10 px-3 transition-all shadow-sm"
+              >
+                <Download className="h-3.5 w-3.5 text-[#ec4899]" />
+                Template
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => document.getElementById('product-upload')?.click()}
+                className="rounded-xl border-pink-100 hover:bg-pink-50 gap-2 text-[#5d4037] font-bold text-xs h-10 px-3 transition-all shadow-sm"
+              >
+                <Upload className="h-3.5 w-3.5 text-[#ec4899]" />
+                Impor
+                <input 
+                  id="product-upload" 
+                  type="file" 
+                  accept=".xlsx, .xls, .csv" 
+                  className="hidden" 
+                  onChange={handleFileUpload} 
                 />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
+              </Button>
+              <DialogTrigger asChild>
+                <Button onClick={() => setIsAddOpen(true)} className="bg-[#ec4899] hover:bg-[#db2777] text-white font-black rounded-xl h-10 px-4 shadow-sm transition-all">
+                  <Plus className="mr-2 h-3.5 w-3.5" /> Tambah Produk
+                </Button>
+              </DialogTrigger>
+            </div>
+            <DialogContent className="sm:max-w-[425px] bg-white border-pink-100 rounded-3xl overflow-hidden p-0">
+              <DialogHeader className="bg-pink-50/50 p-6 border-b border-pink-100">
+                <DialogTitle className="text-[#5d4037] font-black uppercase tracking-widest flex items-center gap-2">
+                  <Package className="h-5 w-5 text-[#ec4899]" />
+                  {editingProduct ? 'Edit Produk' : 'Tambah Produk'}
+                </DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleSubmit} className="space-y-4 p-6">
                 <div className="space-y-2">
-                  <Label htmlFor="capital_price" className="text-[#ec4899] font-bold text-[10px] uppercase tracking-widest">Harga Modal (Rp)</Label>
+                  <Label htmlFor="name" className="text-[#ec4899] font-bold text-[10px] uppercase tracking-widest">Nama Produk</Label>
                   <Input
-                    id="capital_price"
-                    type="number"
-                    value={formData.capital_price}
-                    onChange={(e) => setFormData({...formData, capital_price: e.target.value})}
+                    id="name"
+                    value={formData.name}
+                    onChange={(e) => setFormData({...formData, name: e.target.value})}
                     required
-                    className="bg-white border-pink-100 rounded-xl h-11 text-[#5d4037]"
+                    className="bg-white border-pink-100 rounded-xl h-11 text-[#5d4037] font-semibold"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="price" className="text-[#ec4899] font-bold text-[10px] uppercase tracking-widest">Harga Jual (Rp)</Label>
-                  <Input
-                    id="price"
-                    type="number"
-                    value={formData.price}
-                    onChange={(e) => setFormData({...formData, price: e.target.value})}
-                    required
-                    className="bg-white border-pink-100 rounded-xl h-11 text-[#5d4037]"
-                  />
-                </div>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="category" className="text-[#ec4899] font-bold text-[10px] uppercase tracking-widest">Kategori</Label>
-                <Select 
-                  value={formData.category_id} 
-                  onValueChange={(val) => setFormData({...formData, category_id: val})}
-                >
-                  <SelectTrigger className="bg-white border-pink-100 rounded-xl h-11 text-[#5d4037]">
-                    <SelectValue placeholder="Pilih Kategori" />
-                  </SelectTrigger>
-                  <SelectContent className="bg-white border-pink-100">
-                    {categories?.map((cat) => (
-                      <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="image" className="text-[#ec4899] font-bold text-[10px] uppercase tracking-widest">Foto Produk</Label>
-                <div className="flex flex-col gap-4">
-                  <div 
-                    onClick={() => document.getElementById('image-upload')?.click()}
-                    className="h-40 w-full rounded-2xl border-2 border-dashed border-pink-100 bg-[#f0f9f1] flex items-center justify-center overflow-hidden relative group cursor-pointer hover:bg-pink-50 transition-colors"
-                  >
-                    {formData.image_url ? (
-                      <>
-                        <img src={formData.image_url} alt="Preview" className="h-full w-full object-cover" />
-                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
-                          <Button 
-                            type="button" 
-                            variant="destructive" 
-                            size="sm" 
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              if (confirm('Hapus foto ini?')) {
-                                setFormData({...formData, image_url: ''});
-                                toast.success('Foto dihapus dari formulir');
-                              }
-                            }}
-                            className="rounded-xl h-10 bg-white text-rose-500 hover:bg-rose-50 font-bold px-4 gap-2 shadow-xl"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                            Hapus Foto
-                          </Button>
-                          <p className="text-[10px] text-white font-bold uppercase tracking-widest drop-shadow-md">Klik area lain untuk ganti</p>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="flex flex-col items-center gap-2 text-[#5d4037] opacity-20 group-hover:opacity-60 transition-opacity text-center px-4">
-                        <Upload className="h-8 w-8" />
-                        <p className="text-[10px] font-bold uppercase tracking-widest">Klik di sini untuk Upload Foto</p>
-                      </div>
-                    )}
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="capital_price" className="text-[#ec4899] font-bold text-[10px] uppercase tracking-widest">Harga Modal (Rp)</Label>
+                    <Input
+                      id="capital_price"
+                      type="number"
+                      value={formData.capital_price}
+                      onChange={(e) => setFormData({...formData, capital_price: e.target.value})}
+                      required
+                      className="bg-white border-pink-100 rounded-xl h-11 text-[#5d4037] font-semibold"
+                    />
                   </div>
-                  <Input
-                    id="image-upload"
-                    type="file"
-                    accept="image/*"
-                    className="hidden" // Hide the original ugly input
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-
-                      try {
-                        toast.info('Sedang mengunggah gambar...');
-                        const fileExt = file.name.split('.').pop();
-                        const fileName = `${Math.random()}.${fileExt}`;
-                        const filePath = `${fileName}`;
-
-                        const { error: uploadError } = await supabase.storage
-                          .from('store-logos')
-                          .upload(filePath, file);
-
-                        if (uploadError) throw uploadError;
-
-                        const { data: { publicUrl } } = supabase.storage
-                          .from('store-logos')
-                          .getPublicUrl(filePath);
-
-                        setFormData({ ...formData, image_url: publicUrl });
-                        toast.success('Gambar berhasil diunggah');
-                      } catch (error: any) {
-                        toast.error('Gagal mengunggah gambar', { description: error.message });
-                      }
-                    }}
-                    className="bg-white border-pink-100 rounded-xl text-[#5d4037]"
-                  />
+                  <div className="space-y-2">
+                    <Label htmlFor="price" className="text-[#ec4899] font-bold text-[10px] uppercase tracking-widest">Harga Jual (Rp)</Label>
+                    <Input
+                      id="price"
+                      type="number"
+                      value={formData.price}
+                      onChange={(e) => setFormData({...formData, price: e.target.value})}
+                      required
+                      className="bg-white border-pink-100 rounded-xl h-11 text-[#5d4037] font-semibold"
+                    />
+                  </div>
                 </div>
-              </div>
-              <DialogFooter>
+                <div className="space-y-2">
+                  <Label htmlFor="category" className="text-[#ec4899] font-bold text-[10px] uppercase tracking-widest">Kategori</Label>
+                  <Select 
+                    value={formData.category_id} 
+                    onValueChange={(val) => setFormData({...formData, category_id: val})}
+                  >
+                    <SelectTrigger className="bg-white border-pink-100 rounded-xl h-11 text-[#5d4037] font-semibold">
+                      <SelectValue placeholder="Pilih Kategori" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white border-pink-100 rounded-xl">
+                      {categories?.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.id} className="font-semibold">{cat.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="image" className="text-[#ec4899] font-bold text-[10px] uppercase tracking-widest">Foto Produk</Label>
+                  <div className="flex flex-col gap-4">
+                    <div 
+                      onClick={() => document.getElementById('image-upload')?.click()}
+                      className="h-40 w-full rounded-2xl border-2 border-dashed border-pink-100 bg-[#f0f9f1] flex items-center justify-center overflow-hidden relative group cursor-pointer hover:bg-pink-50 transition-colors"
+                    >
+                      {formData.image_url ? (
+                        <>
+                          <img src={formData.image_url} alt="Preview" className="h-full w-full object-cover" />
+                          <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
+                            <Button 
+                              type="button" 
+                              variant="destructive" 
+                              size="sm" 
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                if (confirm('Hapus foto ini?')) {
+                                  setFormData({...formData, image_url: ''});
+                                  toast.success('Foto dihapus dari formulir');
+                                }
+                              }}
+                              className="rounded-xl h-10 bg-white text-rose-500 hover:bg-rose-50 font-bold px-4 gap-2 shadow-xl"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                              Hapus Foto
+                            </Button>
+                            <p className="text-[10px] text-white font-bold uppercase tracking-widest drop-shadow-md">Klik area lain untuk ganti</p>
+                          </div>
+                        </>
+                      ) : (
+                        <div className="flex flex-col items-center gap-2 text-[#5d4037] opacity-20 group-hover:opacity-60 transition-opacity text-center px-4">
+                          <Upload className="h-8 w-8" />
+                          <p className="text-[10px] font-bold uppercase tracking-widest">Klik di sini untuk Upload Foto</p>
+                        </div>
+                      )}
+                    </div>
+                    <Input
+                      id="image-upload"
+                      type="file"
+                      accept="image/*"
+                      className="hidden" // Hide the original ugly input
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+  
+                        try {
+                          toast.info('Sedang mengunggah gambar...');
+                          const fileExt = file.name.split('.').pop();
+                          const fileName = `${Math.random()}.${fileExt}`;
+                          const filePath = `${fileName}`;
+  
+                          const { error: uploadError } = await supabase.storage
+                            .from('store-logos')
+                            .upload(filePath, file);
+  
+                          if (uploadError) throw uploadError;
+  
+                          const { data: { publicUrl } } = supabase.storage
+                            .from('store-logos')
+                            .getPublicUrl(filePath);
+  
+                          setFormData({ ...formData, image_url: publicUrl });
+                          toast.success('Gambar berhasil diunggah');
+                        } catch (error: any) {
+                          toast.error('Gagal mengunggah gambar', { description: error.message });
+                        }
+                      }}
+                    />
+                  </div>
+                </div>
                 <Button 
                   type="submit" 
-                  className="w-full bg-[#ec4899] hover:bg-[#db2777] text-white h-12 rounded-xl font-bold"
+                  className="w-full bg-[#ec4899] hover:bg-[#db2777] text-white h-12 rounded-xl font-black mt-4 shadow-lg shadow-pink-200"
                   disabled={createMutation.isPending || updateMutation.isPending}
                 >
                   {(createMutation.isPending || updateMutation.isPending) ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <Loader2 className="h-5 w-5 animate-spin" />
                   ) : (
-                    editingProduct ? 'Simpan Perubahan' : 'Tambah Produk'
+                    editingProduct ? 'SIMPAN PERUBAHAN' : 'SIMPAN PRODUK'
                   )}
                 </Button>
-              </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
-      </div>
-
-      {/* Filters */}
-      <div className="flex flex-wrap items-center gap-4 bg-white p-4 rounded-2xl border border-pink-100 shadow-sm">
-        <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#ec4899]" />
-          <Input 
-            placeholder="Cari nama produk..." 
-            className="pl-10 bg-white border-pink-100 rounded-xl text-[#5d4037]"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-          />
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
-        <div className="flex items-center gap-2">
-          <Filter className="h-4 w-4 text-[#ec4899]" />
-          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="w-[180px] bg-white border-pink-100 rounded-xl h-10 text-[#5d4037]">
-              <SelectValue placeholder="Filter Kategori" />
-            </SelectTrigger>
-            <SelectContent className="bg-white border-pink-100">
-              <SelectItem value="all">Semua Kategori</SelectItem>
-              {categories?.map((cat) => (
-                <SelectItem key={cat.id} value={cat.id}>{cat.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+
+        {/* Filters inline at the top right */}
+        <div className="bg-white p-3 rounded-2xl border border-pink-100 shadow-sm w-full xl:w-auto">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <div className="relative flex-1 sm:w-[250px]">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#ec4899]" />
+              <Input 
+                placeholder="Cari nama produk..." 
+                className="pl-10 bg-pink-50/50 border-none rounded-xl h-10 text-[#5d4037] font-semibold text-xs focus-visible:ring-1 focus-visible:ring-pink-200"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+            </div>
+            <div className="hidden sm:block h-8 w-px bg-pink-100 mx-1" />
+            <div className="flex items-center gap-2 flex-1 sm:flex-none">
+              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                <SelectTrigger className="w-full sm:w-[160px] bg-pink-50/50 border-none rounded-xl h-10 text-[#5d4037] font-semibold text-xs focus-visible:ring-1 focus-visible:ring-pink-200">
+                  <SelectValue placeholder="Semua Kategori" />
+                </SelectTrigger>
+                <SelectContent className="bg-white border-pink-100 rounded-xl">
+                  <SelectItem value="all" className="font-bold text-xs">Semua Kategori</SelectItem>
+                  {categories?.map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id} className="font-semibold text-xs">{cat.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </div>
       </div>
 

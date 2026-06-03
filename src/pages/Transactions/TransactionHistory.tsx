@@ -263,121 +263,119 @@ export default function TransactionHistory() {
 
   return (
     <div className="space-y-6 animate-fade-in pb-10">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div className="space-y-1">
-          <h1 className="text-2xl md:text-3xl font-black tracking-tighter text-foreground uppercase italic leading-none">Riwayat Transaksi</h1>
-          <p className="text-muted-foreground text-[10px] md:text-xs font-bold uppercase tracking-widest opacity-70">Audit seluruh jejak transaksi {storeName}</p>
+      <div className="flex flex-col xl:flex-row xl:items-start justify-between gap-6">
+        <div className="space-y-4">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-black tracking-tighter text-foreground uppercase italic leading-none">Riwayat Transaksi</h1>
+            <p className="text-muted-foreground text-[10px] md:text-xs font-bold uppercase tracking-widest opacity-70">Audit seluruh jejak transaksi {storeName}</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button 
+              variant="outline" 
+              className="rounded-xl border-border bg-card shadow-sm font-bold text-xs hover:bg-accent transition-all h-10 px-3"
+              onClick={() => setIsPreviewOpen(true)}
+              disabled={isLoading || filteredTransactions.length === 0}
+            >
+              <Eye className="mr-2 h-3.5 w-3.5 text-primary" /> Preview
+            </Button>
+            <Button 
+              variant="outline" 
+              className="rounded-xl border-border bg-card shadow-sm font-bold text-xs hover:bg-accent transition-all h-10 px-3"
+              onClick={handleExportExcel}
+              disabled={isLoading || filteredTransactions.length === 0}
+            >
+              <TableIcon className="mr-2 h-3.5 w-3.5 text-emerald-500" /> Export Excel
+            </Button>
+            <Button 
+              variant="outline" 
+              className="rounded-xl border-red-200 bg-red-50/50 text-red-600 hover:bg-red-50 hover:text-red-700 shadow-sm font-bold text-xs transition-all h-10 px-3"
+              onClick={() => handlePrint()}
+              disabled={isLoading || filteredTransactions.length === 0}
+            >
+              <FileText className="mr-2 h-3.5 w-3.5 text-red-500" /> Export PDF
+            </Button>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            size="sm"
-            className="rounded-xl border-border bg-card shadow-sm font-bold text-xs hover:bg-accent transition-all h-9"
-            onClick={() => setIsPreviewOpen(true)}
-            disabled={isLoading || filteredTransactions.length === 0}
-          >
-            <Eye className="mr-2 h-4 w-4 text-primary" /> Preview
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm"
-            className="rounded-xl border-border bg-card shadow-sm font-bold text-xs hover:bg-accent transition-all h-9"
-            onClick={() => handlePrint()}
-            disabled={isLoading || filteredTransactions.length === 0}
-          >
-            <FileText className="mr-2 h-4 w-4 text-red-500" /> Export PDF
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm"
-            className="rounded-xl border-border bg-card shadow-sm font-bold text-xs hover:bg-accent transition-all h-9"
-            onClick={handleExportExcel}
-            disabled={isLoading || filteredTransactions.length === 0}
-          >
-            <TableIcon className="mr-2 h-4 w-4 text-emerald-500" /> Export Excel
-          </Button>
+
+        <div className="bg-card p-3 rounded-2xl border border-border shadow-sm w-full xl:w-auto">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <div className="flex flex-wrap items-center gap-1.5 bg-muted/30 p-1 rounded-xl border border-border/50">
+              {[
+                { id: 'today', label: 'Hari Ini' },
+                { id: 'yesterday', label: 'Kemarin' },
+                { id: 'last7days', label: '7 Hari' },
+                { id: 'last30days', label: '30 Hari' },
+              ].map((p) => (
+                <Button
+                  key={p.id}
+                  variant={rangePreset === p.id ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => handlePresetChange(p.id)}
+                  className={cn(
+                    "rounded-lg h-8 font-bold px-3 transition-all text-[10px] sm:text-xs",
+                    rangePreset === p.id ? "gradient-primary text-white shadow-md" : "hover:bg-accent text-muted-foreground"
+                  )}
+                >
+                  {p.label}
+                </Button>
+              ))}
+            </div>
+
+            <div className="hidden sm:block h-8 w-px bg-border mx-1" />
+
+            <div className="grid grid-cols-2 gap-2 bg-muted/30 p-1 rounded-xl border border-border/50 flex-1 sm:flex-none">
+              <div className="flex items-center gap-2 px-2 py-1 bg-background/50 rounded-lg">
+                <Label className="text-[9px] font-black uppercase text-muted-foreground whitespace-nowrap">Dari</Label>
+                <Input 
+                  type="date" 
+                  className="h-7 w-full bg-transparent border-none font-bold text-[10px] sm:text-xs p-0 focus-visible:ring-0" 
+                  value={dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : ''}
+                  onChange={(e) => {
+                    const newDate = e.target.value ? new Date(e.target.value) : undefined;
+                    setDateRange(prev => ({ ...prev, from: newDate }));
+                    setRangePreset('custom');
+                  }}
+                />
+              </div>
+              <div className="flex items-center gap-2 px-2 py-1 bg-background/50 rounded-lg">
+                <Label className="text-[9px] font-black uppercase text-muted-foreground whitespace-nowrap">Sampai</Label>
+                <Input 
+                  type="date" 
+                  className="h-7 w-full bg-transparent border-none font-bold text-[10px] sm:text-xs p-0 focus-visible:ring-0" 
+                  value={dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : ''}
+                  onChange={(e) => {
+                    const newDate = e.target.value ? new Date(e.target.value) : undefined;
+                    setDateRange(prev => ({ ...prev, to: newDate }));
+                    setRangePreset('custom');
+                  }}
+                />
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Filter */}
-      <div className="bg-card p-4 md:p-6 rounded-3xl border border-border space-y-4 md:space-y-6 shadow-sm">
-        <div className="flex flex-col xl:flex-row xl:items-center gap-4">
-          <div className="flex items-center gap-2 bg-muted/30 p-1.5 rounded-2xl border border-border/50">
-            {[
-              { id: 'today', label: 'Hari Ini' },
-              { id: 'yesterday', label: 'Kemarin' },
-              { id: 'last7days', label: '7 Hari' },
-              { id: 'last30days', label: '30 Hari' },
-            ].map((p) => (
-              <Button
-                key={p.id}
-                variant={rangePreset === p.id ? "default" : "ghost"}
-                size="sm"
-                onClick={() => handlePresetChange(p.id)}
-                className={cn(
-                  "rounded-xl h-9 font-bold px-4",
-                  rangePreset === p.id ? "gradient-primary text-white" : "hover:bg-accent"
-                )}
-              >
-                {p.label}
-              </Button>
-            ))}
-          </div>
-
-          <div className="hidden xl:block h-10 w-px bg-border mx-2" />
-
-          <div className="grid grid-cols-2 gap-3 bg-muted/30 p-1.5 rounded-2xl border border-border/50 flex-1 xl:flex-none">
-            <div className="flex items-center gap-2 px-3 py-1 bg-background/50 rounded-xl">
-              <Label className="text-[9px] font-black uppercase text-muted-foreground whitespace-nowrap">Dari</Label>
-              <Input 
-                type="date" 
-                className="h-8 w-full bg-transparent border-none font-bold text-xs p-0 focus-visible:ring-0" 
-                value={dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : ''}
-                onChange={(e) => {
-                  const newDate = e.target.value ? new Date(e.target.value) : undefined;
-                  setDateRange(prev => ({ ...prev, from: newDate }));
-                  setRangePreset('custom');
-                }}
-              />
-            </div>
-            <div className="flex items-center gap-2 px-3 py-1 bg-background/50 rounded-xl">
-              <Label className="text-[9px] font-black uppercase text-muted-foreground whitespace-nowrap">Sampai</Label>
-              <Input 
-                type="date" 
-                className="h-8 w-full bg-transparent border-none font-bold text-xs p-0 focus-visible:ring-0" 
-                value={dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : ''}
-                onChange={(e) => {
-                  const newDate = e.target.value ? new Date(e.target.value) : undefined;
-                  setDateRange(prev => ({ ...prev, to: newDate }));
-                  setRangePreset('custom');
-                }}
-              />
-            </div>
-          </div>
+      <div className="flex flex-col md:flex-row gap-4 mb-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+          <Input 
+            placeholder="Cari transaksi berdasarkan ID, nama kasir, pelanggan, atau metode..." 
+            className="pl-12 bg-card border border-border shadow-sm rounded-2xl h-12 text-sm"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
         </div>
-
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-            <Input 
-              placeholder="Cari transaksi berdasarkan ID, nama kasir, pelanggan, atau metode..." 
-              className="pl-12 bg-secondary/50 border-border rounded-2xl h-12 text-sm"
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-            />
-          </div>
-          <Button
-            variant={showManualOnly ? "default" : "outline"}
-            onClick={() => setShowManualOnly(!showManualOnly)}
-            className={cn(
-              "rounded-2xl h-12 px-6 font-bold flex items-center gap-2 transition-all",
-              showManualOnly ? "gradient-primary text-white shadow-lg" : "bg-secondary/50 border-border text-muted-foreground hover:bg-secondary"
-            )}
-          >
-            <Navigation className={cn("h-4 w-4", showManualOnly && "animate-pulse")} />
-            {showManualOnly ? "MENAMPILKAN MANUAL" : "FILTER MANUAL"}
-          </Button>
-        </div>
+        <Button
+          variant={showManualOnly ? "default" : "outline"}
+          onClick={() => setShowManualOnly(!showManualOnly)}
+          className={cn(
+            "rounded-2xl h-12 px-6 font-bold flex items-center gap-2 transition-all shadow-sm",
+            showManualOnly ? "gradient-primary text-white shadow-lg" : "bg-card border-border text-muted-foreground hover:bg-secondary"
+          )}
+        >
+          <Navigation className={cn("h-4 w-4", showManualOnly && "animate-pulse")} />
+          {showManualOnly ? "MENAMPILKAN MANUAL" : "FILTER MANUAL"}
+        </Button>
       </div>
 
       {/* Summary Cards */}

@@ -20,7 +20,10 @@ export default function MainLayout({ children }: MainLayoutProps) {
   const { user, loading } = useAuth();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { data: config } = useStoreConfig();
+  const [logoError, setLogoError] = useState(false);
   const storeName = config?.store_name || 'WUDkopi';
+  
+  const logoSrc = logoError ? "/wudkopi-logo.png" : (config?.logo_url || "/wudkopi-logo.png");
 
   if (loading) {
     return (
@@ -69,7 +72,12 @@ export default function MainLayout({ children }: MainLayoutProps) {
               <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest leading-none">Petugas</p>
             </div>
             <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-card border border-border overflow-hidden pos-shadow">
-              <img src={config?.logo_url || "/wudkopi-logo.png"} alt={storeName} className="h-full w-full object-cover" />
+              <img 
+                src={logoSrc} 
+                alt={storeName} 
+                className="h-full w-full object-cover" 
+                onError={() => setLogoError(true)}
+              />
             </div>
           </div>
         </header>

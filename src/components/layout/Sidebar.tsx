@@ -62,9 +62,12 @@ interface SidebarProps {
 
 export function Sidebar({ onClose }: SidebarProps) {
   const [collapsed, setCollapsed] = useState(false);
+  const [logoError, setLogoError] = useState(false);
   const { signOut } = useAuth();
   const { data: config } = useStoreConfig();
   const storeName = config?.store_name || 'WUDkopi';
+  
+  const logoSrc = logoError ? "/wudkopi-logo.png" : (config?.logo_url || "/wudkopi-logo.png");
 
   return (
     <aside 
@@ -78,14 +81,23 @@ export function Sidebar({ onClose }: SidebarProps) {
         {!collapsed && (
           <div className="flex items-center gap-3">
             <div className="h-9 w-9 md:h-10 md:w-10 rounded-xl border border-border bg-muted flex items-center justify-center font-black text-primary shadow-sm overflow-hidden">
-              <img src={config?.logo_url || "/wudkopi-logo.png"} className="h-full w-full object-cover" />
+              <img 
+                src={logoSrc} 
+                className="h-full w-full object-cover" 
+                onError={() => setLogoError(true)}
+              />
             </div>
             <span className="text-xl font-bold text-gradient truncate max-w-[140px]">{storeName}</span>
           </div>
         )}
         {collapsed && (
           <div className="mx-auto flex h-10 w-10 items-center justify-center rounded-xl bg-card border border-border overflow-hidden pos-shadow">
-            <img src={config?.logo_url || "/wudkopi-logo.png"} alt={storeName} className="h-full w-full object-cover" />
+            <img 
+              src={logoSrc} 
+              alt={storeName} 
+              className="h-full w-full object-cover" 
+              onError={() => setLogoError(true)}
+            />
           </div>
         )}
       </div>

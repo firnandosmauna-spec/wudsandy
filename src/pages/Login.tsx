@@ -13,17 +13,18 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const [logoError, setLogoError] = useState(false);
   const { signIn, signUp, signOut } = useAuth();
   const { data: config } = useStoreConfig();
   const navigate = useNavigate();
+
+  const storeName = config?.store_name || 'WUDkopi';
+  const logoSrc = logoError ? "/wudkopi-logo.png" : (config?.logo_url || "/wudkopi-logo.png");
 
   useEffect(() => {
     // Clear existing session/cookies when landing on login page
     signOut();
   }, []);
-
-
-  const storeName = config?.store_name || 'WUDkopi';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,15 +68,10 @@ export default function Login() {
         <div className="mb-8 text-center space-y-4">
           <div className="mx-auto flex h-32 w-32 items-center justify-center rounded-[2rem] bg-transparent overflow-hidden group hover:scale-110 transition-transform duration-500">
             <img 
-               src={config?.logo_url || "/wudkopi-logo.png"} 
+               src={logoSrc} 
+               onError={() => setLogoError(true)}
                alt={storeName} 
                className="h-full w-full object-contain drop-shadow-xl" 
-               onError={(e) => {
-                 const target = e.target as HTMLImageElement;
-                 if (!target.src.includes('wudkopi-logo.png')) {
-                   target.src = "/wudkopi-logo.png";
-                 }
-               }}
             />
           </div>
           <div>
