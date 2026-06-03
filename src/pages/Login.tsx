@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useStoreConfig } from '@/hooks/useStoreConfig';
 import { useNavigate } from 'react-router-dom';
@@ -13,9 +13,15 @@ export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, signOut } = useAuth();
   const { data: config } = useStoreConfig();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Clear existing session/cookies when landing on login page
+    signOut();
+  }, []);
+
 
   const storeName = config?.store_name || 'WUDkopi';
 
