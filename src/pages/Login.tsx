@@ -25,12 +25,18 @@ export default function Login() {
 
     try {
       if (isLogin) {
-        const { error } = await signIn(email, password);
+        const { data, error } = await signIn(email, password);
         if (error) {
           toast.error('Login gagal', { description: error.message });
         } else {
-          toast.success('Login berhasil!');
-          navigate('/');
+          toast.success('Selamat Datang!', { description: 'Berhasil masuk ke sistem.' });
+          
+          // Check role and redirect
+          if (data?.user?.user_metadata?.role === 'web_admin') {
+            navigate('/landing-admin');
+          } else {
+            navigate('/home');
+          }
         }
       } else {
         const { error } = await signUp(email, password);
@@ -49,61 +55,69 @@ export default function Login() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
+    <div className="flex min-h-screen items-center justify-center bg-[#f0f9f1] p-4 font-sans">
       <div className="w-full max-w-md">
         {/* Logo */}
-        <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-card border border-border overflow-hidden pos-shadow animate-pulse-glow">
-            {config?.logo_url ? (
-              <img src={config.logo_url} alt={storeName} className="h-full w-full object-contain" />
-            ) : (
-              <div className="flex h-full w-full items-center justify-center gradient-primary">
-                <Store className="h-8 w-8 text-primary-foreground" />
-              </div>
-            )}
+        <div className="mb-8 text-center space-y-4">
+          <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-[2rem] bg-white border-2 border-primary/20 shadow-xl overflow-hidden group hover:scale-110 transition-transform duration-500">
+            <img 
+               src={config?.logo_url || "/wudkopi-logo.png"} 
+               alt={storeName} 
+               className="h-full w-full object-cover" 
+               onError={(e) => {
+                 const target = e.target as HTMLImageElement;
+                 if (!target.src.includes('wudkopi-logo.png')) {
+                   target.src = "/wudkopi-logo.png";
+                 }
+               }}
+            />
           </div>
-          <h1 className="text-3xl font-bold text-gradient">{storeName}</h1>
-          <p className="mt-2 text-muted-foreground">Point of Sale Modern</p>
+          <div>
+            <h1 className="text-4xl font-black text-foreground uppercase tracking-tighter leading-none">{storeName}</h1>
+            <p className="mt-3 text-[10px] font-black text-primary uppercase tracking-[0.3em] opacity-70">Admin System</p>
+          </div>
         </div>
 
         {/* Form Card */}
-        <div className="rounded-2xl border border-border bg-card p-6 shadow-xl animate-fade-in">
-          <div className="mb-6">
-            <h2 className="text-xl font-bold text-foreground">
-              {isLogin ? 'Masuk ke Akun' : 'Buat Akun Baru'}
+        <div className="rounded-[2.5rem] border-2 border-pink-100 bg-white p-8 md:p-10 shadow-2xl shadow-pink-100/30 animate-fade-in relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-8 opacity-5 text-4xl select-none">🍩</div>
+          
+          <div className="mb-8">
+            <h2 className="text-2xl font-black text-[#5d4037] uppercase tracking-tight">
+              {isLogin ? 'Selamat Datang' : 'Bergabunglah'}
             </h2>
-            <p className="text-sm text-muted-foreground mt-1">
+            <p className="text-xs font-bold text-[#ec4899] uppercase tracking-widest mt-1 opacity-60">
               {isLogin
-                ? 'Masukkan kredensial untuk melanjutkan'
-                : 'Isi form untuk membuat akun baru'}
+                ? 'Silakan masuk ke akun Anda'
+                : 'Buat akun baru untuk mulai'}
             </p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-foreground">
-                Email
+              <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-widest text-[#5d4037]/60 ml-1">
+                Alamat Email
               </Label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <div className="relative group">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-xl drop-shadow-sm group-focus-within:scale-110 transition-transform">📧</div>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="nama@email.com"
+                  placeholder="admin@sweetbakery.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="pl-10 h-11 bg-secondary border-border rounded-xl"
+                  className="pl-12 h-14 bg-[#f0f9f1]/50 border-pink-100 rounded-2xl focus:ring-[#ec4899] focus:border-[#ec4899] font-bold text-[#5d4037]"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password" className="text-foreground">
-                Password
+              <Label htmlFor="password" className="text-[10px] font-black uppercase tracking-widest text-[#5d4037]/60 ml-1">
+                Kata Sandi
               </Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <div className="relative group">
+                <div className="absolute left-4 top-1/2 -translate-y-1/2 text-xl drop-shadow-sm group-focus-within:scale-110 transition-transform">🔒</div>
                 <Input
                   id="password"
                   type="password"
@@ -112,7 +126,7 @@ export default function Login() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={6}
-                  className="pl-10 h-11 bg-secondary border-border rounded-xl"
+                  className="pl-12 h-14 bg-[#f0f9f1]/50 border-pink-100 rounded-2xl focus:ring-[#ec4899] focus:border-[#ec4899] font-bold text-[#5d4037]"
                 />
               </div>
             </div>
@@ -120,31 +134,31 @@ export default function Login() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full h-11 gradient-primary text-primary-foreground font-semibold rounded-xl hover:opacity-90 transition-opacity"
+              className="w-full h-14 bg-[#ec4899] hover:bg-[#db2777] text-white font-black uppercase tracking-widest rounded-2xl shadow-lg shadow-pink-200 transition-all active:scale-[0.98]"
             >
               {loading ? (
-                <Loader2 className="h-5 w-5 animate-spin" />
+                <Loader2 className="h-6 w-6 animate-spin" />
               ) : isLogin ? (
-                'Masuk'
+                'Masuk Sekarang'
               ) : (
-                'Daftar'
+                'Daftar Akun'
               )}
             </Button>
           </form>
 
-          <div className="mt-6 text-center">
+          <div className="mt-8 text-center">
             <button
               type="button"
               onClick={() => setIsLogin(!isLogin)}
-              className="text-sm text-primary hover:underline"
+              className="text-[10px] font-black text-[#ec4899] uppercase tracking-widest hover:opacity-70 transition-opacity"
             >
-              {isLogin ? 'Belum punya akun? Daftar' : 'Sudah punya akun? Masuk'}
+              {isLogin ? 'Belum punya akun? Daftar Baru' : 'Sudah punya akun? Masuk Saja'}
             </button>
           </div>
         </div>
 
-        <p className="mt-6 text-center text-xs text-muted-foreground">
-          Aplikasi POS Kasir Modern © 2026 • v1.1.2
+        <p className="mt-8 text-center text-[10px] font-black text-foreground/40 uppercase tracking-[0.2em]">
+          {storeName} Admin Ecosystem • v2.0.0
         </p>
       </div>
     </div>

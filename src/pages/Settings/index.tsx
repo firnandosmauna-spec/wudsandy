@@ -101,10 +101,10 @@ export default function SettingsPage() {
     <div className="max-w-5xl mx-auto space-y-8 animate-fade-in pb-12">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Pengaturan Sistem</h1>
-          <p className="text-muted-foreground mt-1">Konfigurasi teknis, preferensi tampilan struk, dan metode pembayaran.</p>
+          <h1 className="text-3xl font-black text-[#5d4037] uppercase tracking-tight">Pengaturan Sistem</h1>
+          <p className="text-[#ec4899] mt-1 font-bold text-xs uppercase tracking-widest">Konfigurasi teknis, preferensi tampilan struk, dan metode pembayaran.</p>
         </div>
-        <Button onClick={handleSave} className="gradient-primary text-primary-foreground font-bold rounded-xl pos-shadow h-11 px-8" disabled={mutation.isPending}>
+        <Button onClick={handleSave} className="bg-[#ec4899] hover:bg-[#db2777] text-white font-bold rounded-xl shadow-lg shadow-pink-100 h-11 px-8" disabled={mutation.isPending}>
           {mutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
           Simpan Konfigurasi
         </Button>
@@ -113,50 +113,50 @@ export default function SettingsPage() {
       <div className="grid gap-8 lg:grid-cols-2">
         {/* Hardware & UI Preferences */}
         <div className="space-y-8">
-          <Card className="border-border bg-card/50 rounded-3xl overflow-hidden shadow-sm">
-            <CardHeader className="bg-primary/5 pb-6">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Printer className="h-5 w-5 text-primary" /> Konfigurasi Printer
+          <Card className="border-pink-100 bg-white rounded-3xl overflow-hidden shadow-sm">
+            <CardHeader className="bg-[#ec4899]/5 pb-6">
+              <CardTitle className="text-lg flex items-center gap-2 text-[#5d4037] font-black uppercase tracking-tight">
+                <Printer className="h-5 w-5 text-[#ec4899]" /> Konfigurasi Printer
               </CardTitle>
-              <CardDescription>Pengaturan pencetakan struk transaksi.</CardDescription>
+              <CardDescription className="text-[#5d4037]/60">Pengaturan pencetakan struk transaksi.</CardDescription>
             </CardHeader>
             <CardContent className="pt-6 space-y-4">
               <div className="space-y-2">
-                <Label>Ukuran Kertas Struk</Label>
+                <Label className="text-[#ec4899] font-bold text-[10px] uppercase tracking-widest">Ukuran Kertas Struk</Label>
                 <select 
                   value={formData.paper_size}
                   onChange={(e) => setFormData({...formData, paper_size: e.target.value})}
-                  className="w-full h-10 px-3 rounded-xl bg-secondary/50 border border-border text-sm"
+                  className="w-full h-10 px-3 rounded-xl bg-[#f0f9f1] border border-pink-100 text-sm text-[#5d4037] font-bold"
                 >
                   <option value="58mm">58mm (Thermal Standar)</option>
                   <option value="80mm">80mm (Thermal Lebar)</option>
                 </select>
               </div>
-              <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/30">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-[#f0f9f1]/30 border border-pink-100/20">
                  <div className="space-y-0.5">
-                    <Label className="text-sm">Auto Cetak Struk</Label>
-                    <p className="text-[10px] text-muted-foreground">Cetak otomatis setelah pembayaran sukses.</p>
+                    <Label className="text-sm text-[#5d4037] font-bold">Auto Cetak Struk</Label>
+                    <p className="text-[10px] text-[#5d4037]/60">Cetak otomatis setelah pembayaran sukses.</p>
                  </div>
-                 <Switch checked={formData.auto_print} onCheckedChange={() => handleToggle('auto_print')} />
+                 <Switch checked={formData.auto_print} onCheckedChange={() => handleToggle('auto_print')} className="data-[state=checked]:bg-[#ec4899]" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-border bg-card/50 rounded-3xl overflow-hidden shadow-sm">
-            <CardHeader className="bg-emerald-500/5 pb-6">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <CreditCard className="h-5 w-5 text-emerald-500" /> Metode Pembayaran Aktif
+          <Card className="border-pink-100 bg-white rounded-3xl overflow-hidden shadow-sm">
+            <CardHeader className="bg-[#10b981]/5 pb-6">
+              <CardTitle className="text-lg flex items-center gap-2 text-[#5d4037] font-black uppercase tracking-tight">
+                <CreditCard className="h-5 w-5 text-[#10b981]" /> Metode Pembayaran Aktif
               </CardTitle>
-              <CardDescription>Pilih metode yang tersedia di halaman kasir.</CardDescription>
+              <CardDescription className="text-[#5d4037]/60">Pilih metode yang tersedia di halaman kasir.</CardDescription>
             </CardHeader>
             <CardContent className="pt-6 grid grid-cols-2 gap-4">
-              <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/30">
-                 <Label className="text-xs">QRIS</Label>
-                 <Switch checked={formData.enable_qris} onCheckedChange={() => handleToggle('enable_qris')} />
+              <div className="flex items-center justify-between p-3 rounded-xl bg-[#f0f9f1]/30 border border-pink-100/20">
+                 <Label className="text-xs text-[#5d4037] font-bold">QRIS</Label>
+                 <Switch checked={formData.enable_qris} onCheckedChange={() => handleToggle('enable_qris')} className="data-[state=checked]:bg-[#10b981]" />
               </div>
-              <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/30">
-                 <Label className="text-xs">Transfer Bank</Label>
-                 <Switch checked={formData.enable_transfer} onCheckedChange={() => handleToggle('enable_transfer')} />
+              <div className="flex items-center justify-between p-3 rounded-xl bg-[#f0f9f1]/30 border border-pink-100/20">
+                 <Label className="text-xs text-[#5d4037] font-bold">Transfer Bank</Label>
+                 <Switch checked={formData.enable_transfer} onCheckedChange={() => handleToggle('enable_transfer')} className="data-[state=checked]:bg-[#10b981]" />
               </div>
             </CardContent>
           </Card>
@@ -164,52 +164,52 @@ export default function SettingsPage() {
 
         {/* UI Preferences */}
         <div className="space-y-8">
-           <Card className="border-border bg-card/50 rounded-3xl overflow-hidden shadow-sm">
-            <CardHeader className="bg-blue-500/5 pb-6">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Layout className="h-5 w-5 text-blue-500" /> Preferensi Tampilan Kasir
+           <Card className="border-pink-100 bg-white rounded-3xl overflow-hidden shadow-sm">
+            <CardHeader className="bg-[#3b82f6]/5 pb-6">
+              <CardTitle className="text-lg flex items-center gap-2 text-[#5d4037] font-black uppercase tracking-tight">
+                <Layout className="h-5 w-5 text-[#3b82f6]" /> Preferensi Tampilan Kasir
               </CardTitle>
-              <CardDescription>Sesuaikan elemen input yang muncul saat transaksi.</CardDescription>
+              <CardDescription className="text-[#5d4037]/60">Sesuaikan elemen input yang muncul saat transaksi.</CardDescription>
             </CardHeader>
             <CardContent className="pt-6 space-y-5">
-              <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/30">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-[#f0f9f1]/30 border border-pink-100/20">
                  <div className="space-y-0.5">
-                    <Label className="text-sm">Input Nomor Meja</Label>
-                    <p className="text-[10px] text-muted-foreground">Munculkan pilihan meja (untuk Resto/Cafe).</p>
+                    <Label className="text-sm text-[#5d4037] font-bold">Input Nomor Meja</Label>
+                    <p className="text-[10px] text-[#5d4037]/60">Munculkan pilihan meja (untuk Resto/Cafe).</p>
                  </div>
-                 <Switch checked={formData.show_table_number} onCheckedChange={() => handleToggle('show_table_number')} />
+                 <Switch checked={formData.show_table_number} onCheckedChange={() => handleToggle('show_table_number')} className="data-[state=checked]:bg-[#3b82f6]" />
               </div>
-              <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/30">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-[#f0f9f1]/30 border border-pink-100/20">
                  <div className="space-y-0.5">
-                    <Label className="text-sm">Input Nama Pelanggan</Label>
-                    <p className="text-[10px] text-muted-foreground">Aktifkan pencatatan database pelanggan.</p>
+                    <Label className="text-sm text-[#5d4037] font-bold">Input Nama Pelanggan</Label>
+                    <p className="text-[10px] text-[#5d4037]/60">Aktifkan pencatatan database pelanggan.</p>
                  </div>
-                 <Switch checked={formData.show_customer_name} onCheckedChange={() => handleToggle('show_customer_name')} />
+                 <Switch checked={formData.show_customer_name} onCheckedChange={() => handleToggle('show_customer_name')} className="data-[state=checked]:bg-[#3b82f6]" />
               </div>
-              <div className="flex items-center justify-between p-3 rounded-xl bg-secondary/30">
+              <div className="flex items-center justify-between p-3 rounded-xl bg-[#f0f9f1]/30 border border-pink-100/20">
                  <div className="space-y-0.5">
-                    <Label className="text-sm">Nama Kasir di Struk</Label>
-                    <p className="text-[10px] text-muted-foreground">Cetakan nama petugas yang login saat ini.</p>
+                    <Label className="text-sm text-[#5d4037] font-bold">Nama Kasir di Struk</Label>
+                    <p className="text-[10px] text-[#5d4037]/60">Cetakan nama petugas yang login saat ini.</p>
                  </div>
-                 <Switch checked={formData.show_cashier_name} onCheckedChange={() => handleToggle('show_cashier_name')} />
+                 <Switch checked={formData.show_cashier_name} onCheckedChange={() => handleToggle('show_cashier_name')} className="data-[state=checked]:bg-[#3b82f6]" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-border bg-card/50 rounded-3xl overflow-hidden shadow-sm">
-            <CardHeader className="bg-orange-500/5 pb-6">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Settings className="h-5 w-5 text-orange-500" /> Pengaturan ID Transaksi
+          <Card className="border-pink-100 bg-white rounded-3xl overflow-hidden shadow-sm">
+            <CardHeader className="bg-[#f97316]/5 pb-6">
+              <CardTitle className="text-lg flex items-center gap-2 text-[#5d4037] font-black uppercase tracking-tight">
+                <Settings className="h-5 w-5 text-[#f97316]" /> Pengaturan ID Transaksi
               </CardTitle>
-              <CardDescription>Pilih cara pembuatan nomor kartu/ID transaksi.</CardDescription>
+              <CardDescription className="text-[#5d4037]/60">Pilih cara pembuatan nomor kartu/ID transaksi.</CardDescription>
             </CardHeader>
             <CardContent className="pt-6 space-y-4">
               <div className="space-y-2">
-                <Label>Mode ID Transaksi</Label>
+                <Label className="text-[#ec4899] font-bold text-[10px] uppercase tracking-widest">Mode ID Transaksi</Label>
                 <select 
                   value={formData.transaction_id_mode || 'auto'}
                   onChange={(e) => setFormData({...formData, transaction_id_mode: e.target.value})}
-                  className="w-full h-10 px-3 rounded-xl bg-secondary/50 border border-border text-sm"
+                  className="w-full h-10 px-3 rounded-xl bg-[#f0f9f1] border border-pink-100 text-sm text-[#5d4037] font-bold"
                 >
                   <option value="auto">Otomatis (Sistem)</option>
                   <option value="manual">Manual (Input Berkas)</option>
@@ -218,16 +218,16 @@ export default function SettingsPage() {
               
               {formData.transaction_id_mode !== 'manual' && (
                 <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
-                  <Label>Awalan (Prefix) ID</Label>
+                  <Label className="text-[#ec4899] font-bold text-[10px] uppercase tracking-widest">Awalan (Prefix) ID</Label>
                   <div className="flex gap-2">
                     <input 
                       type="text"
                       placeholder="Contoh: TRX, INV, WUD"
                       value={formData.transaction_prefix || ''}
                       onChange={(e) => setFormData({...formData, transaction_prefix: e.target.value.toUpperCase()})}
-                      className="flex-1 h-10 px-3 rounded-xl bg-secondary/50 border border-border text-sm font-bold"
+                      className="flex-1 h-10 px-3 rounded-xl bg-[#f0f9f1] border border-pink-100 text-sm font-black text-[#5d4037]"
                     />
-                    <div className="h-10 px-3 flex items-center rounded-xl bg-muted text-[10px] font-mono text-muted-foreground">
+                    <div className="h-10 px-3 flex items-center rounded-xl bg-[#f0f9f1] border border-pink-100 text-[10px] font-mono text-[#5d4037] font-black">
                       Hasil: {formData.transaction_prefix || 'TRX'}-2024...
                     </div>
                   </div>

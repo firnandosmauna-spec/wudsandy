@@ -241,16 +241,16 @@ export default function StoreManagement() {
   return (
     <div className="space-y-8 animate-fade-in">
       <div>
-        <h1 className="text-3xl font-bold text-foreground">Kelola Toko & Cabang</h1>
-        <p className="text-muted-foreground mt-1">Konfigurasi pusat outlet, identitas bisnis, dan daftar cabang Anda.</p>
+        <h1 className="text-3xl font-black text-[#5d4037] uppercase tracking-tight">Kelola Toko & Cabang</h1>
+        <p className="text-[#ec4899] mt-1 font-bold text-xs uppercase tracking-widest">Konfigurasi pusat outlet, identitas bisnis, dan daftar cabang Anda.</p>
       </div>
 
       <Tabs defaultValue="identity" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 bg-muted p-1 rounded-2xl h-12 max-w-[400px]">
-          <TabsTrigger value="identity" className="rounded-xl font-bold data-[state=active]:gradient-primary data-[state=active]:text-primary-foreground">
+        <TabsList className="grid w-full grid-cols-2 bg-[#f0f9f1] p-1 rounded-2xl h-12 max-w-[400px] border border-pink-100">
+          <TabsTrigger value="identity" className="rounded-xl font-bold data-[state=active]:bg-[#ec4899] data-[state=active]:text-white text-[#5d4037]/60">
             <Store className="h-4 w-4 mr-2" /> Identitas Utama
           </TabsTrigger>
-          <TabsTrigger value="branches" className="rounded-xl font-bold data-[state=active]:gradient-primary data-[state=active]:text-primary-foreground">
+          <TabsTrigger value="branches" className="rounded-xl font-bold data-[state=active]:bg-[#ec4899] data-[state=active]:text-white text-[#5d4037]/60">
             <Building2 className="h-4 w-4 mr-2" /> Daftar Cabang
           </TabsTrigger>
         </TabsList>
@@ -259,12 +259,12 @@ export default function StoreManagement() {
         <TabsContent value="identity" className="mt-8">
           <div className="max-w-4xl grid gap-8 md:grid-cols-2">
             <div className="space-y-8">
-              <Card className="border-border bg-card/50 rounded-3xl overflow-hidden shadow-sm">
-                <CardHeader className="bg-primary/5 pb-6">
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Store className="h-5 w-5 text-primary" /> Informasi Bisnis
+              <Card className="border-pink-100 bg-white rounded-3xl overflow-hidden shadow-sm">
+                <CardHeader className="bg-[#ec4899]/5 pb-6">
+                  <CardTitle className="text-lg flex items-center gap-2 text-[#5d4037] font-black uppercase tracking-tight">
+                    <Store className="h-5 w-5 text-[#ec4899]" /> Informasi Bisnis
                   </CardTitle>
-                  <CardDescription>Informasi yang akan muncul pada struk dan laporan global.</CardDescription>
+                  <CardDescription className="text-[#5d4037]/60">Informasi yang akan muncul pada struk dan laporan global.</CardDescription>
                 </CardHeader>
                 <CardContent className="pt-6 space-y-6">
                   {isLoadingConfig || !storeConfig ? (
@@ -272,9 +272,9 @@ export default function StoreManagement() {
                   ) : (
                     <>
                       {/* Logo Upload Section */}
-                      <div className="flex flex-col items-center gap-4 p-6 rounded-2xl bg-secondary/30 border border-dashed border-border mb-4">
+                      <div className="flex flex-col items-center gap-4 p-6 rounded-2xl bg-[#f0f9f1]/30 border border-dashed border-pink-100 mb-4">
                         <div className="relative group">
-                          <div className="h-24 w-24 rounded-2xl bg-card border border-border flex items-center justify-center overflow-hidden pos-shadow">
+                          <div className="h-24 w-24 rounded-2xl bg-white border border-pink-100 flex items-center justify-center overflow-hidden pos-shadow">
                             {storeConfig.logo_url ? (
                               <img 
                                 src={storeConfig.logo_url} 
@@ -282,7 +282,7 @@ export default function StoreManagement() {
                                 className="h-full w-full object-contain"
                               />
                             ) : (
-                              <ImageIcon className="h-10 w-10 text-muted-foreground" />
+                              <ImageIcon className="h-10 w-10 text-[#5d4037]/20" />
                             )}
                           </div>
                           {storeConfig.logo_url && (
@@ -296,7 +296,7 @@ export default function StoreManagement() {
                         </div>
                         <div className="flex flex-col items-center gap-2">
                           <Label htmlFor="logo-upload" className="cursor-pointer">
-                            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-primary/10 text-primary hover:bg-primary/20 transition-colors text-sm font-bold">
+                            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-pink-100 text-[#ec4899] hover:bg-pink-200 transition-colors text-sm font-bold">
                               <Upload className="h-4 w-4" />
                               {storeConfig.logo_url ? 'Ganti Logo' : 'Unggah Logo Toko'}
                             </div>
@@ -312,27 +312,27 @@ export default function StoreManagement() {
                         </div>
                       </div>
                       <div className="space-y-2">
-                        <Label>Nama Bisnis / Toko Utama</Label>
+                        <Label className="text-[#ec4899] font-bold text-[10px] uppercase tracking-widest">Nama Bisnis / Toko Utama</Label>
                         <Input 
                           value={storeConfig.store_name} 
                           onChange={(e) => setStoreConfig({...storeConfig, store_name: e.target.value})}
-                          className="bg-secondary/50 rounded-xl border-border"
+                          className="bg-white rounded-xl border-pink-100 text-[#5d4037] font-bold"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>Alamat Pusat</Label>
+                        <Label className="text-[#ec4899] font-bold text-[10px] uppercase tracking-widest">Alamat Pusat</Label>
                         <Input 
                           value={storeConfig.store_address} 
                           onChange={(e) => setStoreConfig({...storeConfig, store_address: e.target.value})}
-                          className="bg-secondary/50 rounded-xl border-border"
+                          className="bg-white rounded-xl border-pink-100 text-[#5d4037]"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>WhatsApp / Telp Pusat</Label>
+                        <Label className="text-[#ec4899] font-bold text-[10px] uppercase tracking-widest">WhatsApp / Telp Pusat</Label>
                         <Input 
                           value={storeConfig.store_phone} 
                           onChange={(e) => setStoreConfig({...storeConfig, store_phone: e.target.value})}
-                          className="bg-secondary/50 rounded-xl border-border"
+                          className="bg-white rounded-xl border-pink-100 text-[#5d4037]"
                         />
                       </div>
                     </>
@@ -340,32 +340,32 @@ export default function StoreManagement() {
                 </CardContent>
               </Card>
 
-              <Card className="border-border bg-card/50 rounded-3xl overflow-hidden shadow-sm">
-                <CardHeader className="bg-purple-500/5 pb-6">
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Clock className="h-5 w-5 text-purple-500" /> Jam Operasional
+              <Card className="border-pink-100 bg-white rounded-3xl overflow-hidden shadow-sm">
+                <CardHeader className="bg-[#ec4899]/5 pb-6">
+                  <CardTitle className="text-lg flex items-center gap-2 text-[#5d4037] font-black uppercase tracking-tight">
+                    <Clock className="h-5 w-5 text-[#ec4899]" /> Jam Operasional
                   </CardTitle>
-                  <CardDescription>Jadwal operasional toko untuk pelaporan shift.</CardDescription>
+                  <CardDescription className="text-[#5d4037]/60">Jadwal operasional toko untuk pelaporan shift.</CardDescription>
                 </CardHeader>
                 <CardContent className="pt-6 grid grid-cols-2 gap-4">
                   {!storeConfig ? <Loader2 className="animate-spin" /> : (
                     <>
                       <div className="space-y-2">
-                        <Label>Jam Buka</Label>
+                        <Label className="text-[#ec4899] font-bold text-[10px] uppercase tracking-widest">Jam Buka</Label>
                         <Input 
                           type="time"
                           value={storeConfig.open_time} 
                           onChange={(e) => setStoreConfig({...storeConfig, open_time: e.target.value})}
-                          className="bg-secondary/50 rounded-xl border-border"
+                          className="bg-white rounded-xl border-pink-100 text-[#5d4037] font-bold"
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>Jam Tutup</Label>
+                        <Label className="text-[#ec4899] font-bold text-[10px] uppercase tracking-widest">Jam Tutup</Label>
                         <Input 
                           type="time"
                           value={storeConfig.close_time} 
                           onChange={(e) => setStoreConfig({...storeConfig, close_time: e.target.value})}
-                          className="bg-secondary/50 rounded-xl border-border"
+                          className="bg-white rounded-xl border-pink-100 text-[#5d4037] font-bold"
                         />
                       </div>
                     </>
@@ -373,31 +373,31 @@ export default function StoreManagement() {
                 </CardContent>
               </Card>
 
-              <Card className="border-border bg-card/50 rounded-3xl overflow-hidden shadow-sm">
-                <CardHeader className="bg-blue-600/5 pb-6">
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Hash className="h-5 w-5 text-blue-600" /> Pengaturan Nomor Transaksi (ID)
+              <Card className="border-pink-100 bg-white rounded-3xl overflow-hidden shadow-sm">
+                <CardHeader className="bg-[#ec4899]/5 pb-6">
+                  <CardTitle className="text-lg flex items-center gap-2 text-[#5d4037] font-black uppercase tracking-tight">
+                    <Hash className="h-5 w-5 text-[#ec4899]" /> Pengaturan Nomor Transaksi (ID)
                   </CardTitle>
-                  <CardDescription>Atur bagaimana nomor struk/transaksi dibuat.</CardDescription>
+                  <CardDescription className="text-[#5d4037]/60">Atur bagaimana nomor struk/transaksi dibuat.</CardDescription>
                 </CardHeader>
                 <CardContent className="pt-6 space-y-4">
                   {!storeConfig ? <Loader2 className="animate-spin" /> : (
                     <>
                       <div className="space-y-2">
-                        <Label>Mode Penomoran</Label>
+                        <Label className="text-[#ec4899] font-bold text-[10px] uppercase tracking-widest">Mode Penomoran</Label>
                         <Select 
                           value={storeConfig.transaction_id_mode || 'auto'} 
                           onValueChange={(val) => setStoreConfig({...storeConfig, transaction_id_mode: val})}
                         >
-                          <SelectTrigger className="bg-secondary/50 rounded-xl border-border">
+                          <SelectTrigger className="bg-white rounded-xl border-pink-100 text-[#5d4037] font-bold">
                             <SelectValue placeholder="Pilih Mode" />
                           </SelectTrigger>
-                          <SelectContent className="rounded-xl border-border">
-                            <SelectItem value="auto" className="font-bold">Otomatis (Sistem)</SelectItem>
-                            <SelectItem value="manual" className="font-bold">Manual (Input Kasir)</SelectItem>
+                          <SelectContent className="rounded-xl border-pink-100 bg-white">
+                            <SelectItem value="auto" className="font-bold text-[#5d4037]">Otomatis (Sistem)</SelectItem>
+                            <SelectItem value="manual" className="font-bold text-[#5d4037]">Manual (Input Kasir)</SelectItem>
                           </SelectContent>
                         </Select>
-                        <p className="text-[10px] text-muted-foreground uppercase font-bold px-1">
+                        <p className="text-[10px] text-[#ec4899] uppercase font-bold px-1">
                           {storeConfig.transaction_id_mode === 'manual' 
                             ? "* KASIR WAJIB INPUT NOMOR STRUK SAAT PEMBAYARAN" 
                             : "* SISTEM AKAN GENERATE NOMOR STRUK OTOMATIS"}
@@ -406,12 +406,12 @@ export default function StoreManagement() {
 
                       {storeConfig.transaction_id_mode !== 'manual' && (
                         <div className="space-y-2 animate-in fade-in slide-in-from-top-2">
-                          <Label>Prefix ID Transaksi (Otomatis)</Label>
+                          <Label className="text-[#ec4899] font-bold text-[10px] uppercase tracking-widest">Prefix ID Transaksi (Otomatis)</Label>
                           <Input 
                             value={storeConfig.transaction_prefix || 'TRX'} 
                             onChange={(e) => setStoreConfig({...storeConfig, transaction_prefix: e.target.value.toUpperCase()})}
                             placeholder="Contoh: TRX, INV, WUD"
-                            className="bg-secondary/50 rounded-xl border-border font-mono font-bold"
+                            className="bg-white rounded-xl border-pink-100 font-mono font-black text-[#5d4037]"
                           />
                           <p className="text-[10px] text-muted-foreground">
                             Contoh ID: <span className="text-foreground font-bold font-mono">{storeConfig.transaction_prefix || 'TRX'}-20240101-ABCD</span>
@@ -425,19 +425,19 @@ export default function StoreManagement() {
             </div>
 
             <div className="space-y-8">
-              <Card className="border-border bg-card/50 rounded-3xl overflow-hidden shadow-sm">
-                <CardHeader className="bg-orange-500/5 pb-6">
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <MessageSquare className="h-5 w-5 text-orange-500" /> Pesan Penutup (Footer Struk)
+              <Card className="border-pink-100 bg-white rounded-3xl overflow-hidden shadow-sm">
+                <CardHeader className="bg-[#ec4899]/5 pb-6">
+                  <CardTitle className="text-lg flex items-center gap-2 text-[#5d4037] font-black uppercase tracking-tight">
+                    <MessageSquare className="h-5 w-5 text-[#ec4899]" /> Pesan Penutup (Footer Struk)
                   </CardTitle>
-                  <CardDescription>Pesan yang akan dicetak di akhir struk pembayaran.</CardDescription>
+                  <CardDescription className="text-[#5d4037]/60">Pesan yang akan dicetak di akhir struk pembayaran.</CardDescription>
                 </CardHeader>
                 <CardContent className="pt-6">
                   {!storeConfig ? <Loader2 className="animate-spin" /> : (
                     <textarea 
                       value={storeConfig.footer_message} 
                       onChange={(e) => setStoreConfig({...storeConfig, footer_message: e.target.value})}
-                      className="w-full p-4 rounded-2xl bg-secondary/50 border border-border text-sm min-h-[140px] focus:outline-none focus:ring-1 focus:ring-primary"
+                      className="w-full p-4 rounded-2xl bg-white border border-pink-100 text-sm min-h-[140px] focus:outline-none focus:ring-1 focus:ring-[#ec4899] text-[#5d4037] font-medium"
                       placeholder="Terima kasih telah berbelanja..."
                     />
                   )}
@@ -447,7 +447,7 @@ export default function StoreManagement() {
               <div className="flex justify-end p-2">
                 <Button 
                    onClick={() => configMutation.mutate(storeConfig)} 
-                   className="gradient-primary text-primary-foreground font-black rounded-2xl pos-shadow h-14 px-10 gap-3"
+                   className="bg-[#ec4899] hover:bg-[#db2777] text-white font-black rounded-2xl shadow-lg shadow-pink-100 h-14 px-10 gap-3"
                    disabled={configMutation.isPending}
                 >
                   {configMutation.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : <Save className="h-5 w-5" />}
@@ -470,30 +470,32 @@ export default function StoreManagement() {
               }
             }}>
               <DialogTrigger asChild>
-                <Button onClick={() => setIsAddOpen(true)} className="gradient-primary text-primary-foreground font-semibold rounded-2xl pos-shadow">
+                <Button onClick={() => setIsAddOpen(true)} className="bg-[#ec4899] hover:bg-[#db2777] text-white font-semibold rounded-2xl shadow-lg shadow-pink-100">
                   <Plus className="mr-2 h-4 w-4" /> Tambah Cabang
                 </Button>
               </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px] bg-card border-border">
+              <DialogContent className="sm:max-w-[425px] bg-white border-pink-100">
                 <DialogHeader>
-                  <DialogTitle>{editingBranch ? 'Edit Cabang' : 'Tambah Cabang Baru'}</DialogTitle>
-                  <DialogDescription>Informasi outlet atau unit bisnis baru.</DialogDescription>
+                  <DialogTitle className="text-[#5d4037] font-black uppercase tracking-tight">
+                    {editingBranch ? 'Edit Cabang' : 'Tambah Cabang Baru'}
+                  </DialogTitle>
+                  <DialogDescription className="text-[#ec4899] font-bold text-[10px] uppercase tracking-widest">Informasi outlet atau unit bisnis baru.</DialogDescription>
                 </DialogHeader>
                 <form onSubmit={(e) => { e.preventDefault(); branchMutation.mutate(formData); }} className="space-y-4 pt-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Nama Cabang</Label>
-                    <Input id="name" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} required className="bg-secondary rounded-xl" />
+                    <Label htmlFor="name" className="text-[#5d4037] font-bold text-[10px] uppercase tracking-widest">Nama Cabang</Label>
+                    <Input id="name" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} required className="bg-white border-pink-100 rounded-xl text-[#5d4037] font-bold" />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="address">Alamat</Label>
-                    <Input id="address" value={formData.address} onChange={(e) => setFormData({...formData, address: e.target.value})} required className="bg-secondary rounded-xl" />
+                    <Label htmlFor="address" className="text-[#5d4037] font-bold text-[10px] uppercase tracking-widest">Alamat</Label>
+                    <Input id="address" value={formData.address} onChange={(e) => setFormData({...formData, address: e.target.value})} required className="bg-white border-pink-100 rounded-xl text-[#5d4037]" />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="phone">Telepon</Label>
-                    <Input id="phone" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="bg-secondary rounded-xl" />
+                    <Label htmlFor="phone" className="text-[#5d4037] font-bold text-[10px] uppercase tracking-widest">Telepon</Label>
+                    <Input id="phone" value={formData.phone} onChange={(e) => setFormData({...formData, phone: e.target.value})} className="bg-white border-pink-100 rounded-xl text-[#5d4037]" />
                   </div>
                   <DialogFooter>
-                    <Button type="submit" className="w-full gradient-primary" disabled={branchMutation.isPending}>
+                    <Button type="submit" className="w-full bg-[#ec4899] hover:bg-[#db2777] text-white rounded-xl h-11" disabled={branchMutation.isPending}>
                        {branchMutation.isPending ? <Loader2 className="animate-spin" /> : 'Simpan Data Cabang'}
                     </Button>
                   </DialogFooter>
@@ -506,11 +508,11 @@ export default function StoreManagement() {
             {isLoadingBranches ? (
                 Array(3).fill(0).map((_, i) => <div key={i} className="h-40 bg-muted animate-pulse rounded-3xl" />)
             ) : branches.length === 0 ? (
-                <div className="col-span-full py-12 text-center bg-card border border-dashed border-border rounded-3xl">
-                    <p className="text-muted-foreground">Belum ada cabang terdaftar.</p>
+                <div className="col-span-full py-12 text-center bg-white border border-dashed border-pink-100 rounded-3xl">
+                    <p className="text-[#5d4037] opacity-40 font-bold">Belum ada cabang terdaftar.</p>
                 </div>
             ) : branches.map((branch: any) => (
-              <div key={branch.id} className="relative bg-card border border-border p-6 rounded-3xl shadow-sm hover:shadow-lg transition-all group overflow-hidden">
+              <div key={branch.id} className="relative bg-white border border-pink-100 p-6 rounded-3xl shadow-sm hover:shadow-lg transition-all group overflow-hidden">
                 <div className="absolute top-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-opacity">
                    <div className="flex gap-2">
                      <Button variant="secondary" size="icon" className="h-8 w-8 rounded-lg" onClick={() => {
@@ -522,11 +524,11 @@ export default function StoreManagement() {
                      }}><Trash2 className="h-4 w-4" /></Button>
                    </div>
                 </div>
-                <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center mb-4"><Building2 className="h-6 w-6 text-primary" /></div>
-                <h3 className="text-xl font-black text-foreground mb-4">{branch.name}</h3>
-                <div className="space-y-3 text-sm text-muted-foreground">
-                  <div className="flex items-start gap-2"><MapPin className="h-4 w-4 mt-0.5" /><p className="line-clamp-2">{branch.address || '-'}</p></div>
-                  <div className="flex items-center gap-2"><Phone className="h-4 w-4" /><p>{branch.phone || '-'}</p></div>
+                <div className="h-12 w-12 rounded-2xl bg-pink-100 flex items-center justify-center mb-4"><Building2 className="h-6 w-6 text-[#ec4899]" /></div>
+                <h3 className="text-xl font-black text-[#5d4037] mb-4 uppercase tracking-tighter">{branch.name}</h3>
+                <div className="space-y-3 text-sm text-[#5d4037]/60 font-medium">
+                  <div className="flex items-start gap-2"><MapPin className="h-4 w-4 mt-0.5 text-[#ec4899]" /><p className="line-clamp-2">{branch.address || '-'}</p></div>
+                  <div className="flex items-center gap-2"><Phone className="h-4 w-4 text-[#ec4899]" /><p>{branch.phone || '-'}</p></div>
                 </div>
               </div>
             ))}

@@ -76,10 +76,10 @@ import { useReactToPrint } from 'react-to-print';
 export default function PurchaseReport() {
   const [search, setSearch] = useState('');
   const [dateRange, setDateRange] = useState<DateRangeType | undefined>({
-    from: startOfMonth(new Date()),
+    from: startOfDay(new Date()),
     to: endOfDay(new Date()),
   });
-  const [rangePreset, setRangePreset] = useState<string>('thismonth');
+  const [rangePreset, setRangePreset] = useState<string>('today');
   const [cashierId, setCashierId] = useState<string>('all');
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [editingPurchase, setEditingPurchase] = useState<any>(null);
@@ -268,9 +268,20 @@ export default function PurchaseReport() {
   const handlePresetChange = (preset: string) => {
     setRangePreset(preset);
     const today = new Date();
-    if (preset === 'today') setDateRange({ from: today, to: today });
-    if (preset === 'thismonth') setDateRange({ from: startOfMonth(today), to: endOfMonth(today) });
-    // ...other presets can be added similarly
+    switch (preset) {
+      case 'today':
+        setDateRange({ from: today, to: today });
+        break;
+      case 'last7days':
+        setDateRange({ from: subDays(today, 7), to: today });
+        break;
+      case 'last30days':
+        setDateRange({ from: subDays(today, 30), to: today });
+        break;
+      case 'thismonth':
+        setDateRange({ from: startOfMonth(today), to: endOfMonth(today) });
+        break;
+    }
   };
 
   return (
@@ -358,9 +369,103 @@ export default function PurchaseReport() {
           </div>
       </div>
 
-      <div className="bg-card p-6 rounded-3xl border border-border flex items-center gap-4">
-          <Search className="h-5 w-5 text-muted-foreground" />
-          <Input placeholder="Cari supplier atau no invoice..." value={search} onChange={(e) => setSearch(e.target.value)} className="bg-secondary/50 rounded-2xl h-12 border-none" />
+      <div className="bg-card p-4 md:p-6 rounded-3xl border border-border space-y-4 md:space-y-6 shadow-sm">
+        <div className="flex flex-col xl:flex-row xl:items-center gap-4">
+          <div className="flex flex-wrap items-center gap-2 bg-muted/30 p-1.5 rounded-2xl border border-border/50">
+            {[
+              { id: 'today', label: 'Hari Ini' },
+              { id: 'last7days', label: '7 Hari' },
+              { id: 'last30days', label: '30 Hari' },
+            ].map((p) => (
+              <Button
+                key={p.id}
+                variant={rangePreset === p.id ? "default" : "ghost"}
+                size="sm"
+                onClick={() => handlePresetChange(p.id)}
+                className={cn(
+                  "rounded-xl h-9 font-bold px-4 transition-all text-xs",
+                  rangePreset === p.id ? "gradient-primary text-white shadow-md" : "hover:bg-accent text-muted-foreground"
+                )}
+              >
+                {p.label}
+              </Button>
+            ))}
+            
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={rangePreset === 'custom' ? "default" : "ghost"}
+                  size="sm"
+                  onClick={() => setRangePreset('custom')}
+                  className={cn(
+                    "rounded-xl h-9 px-4 font-bold gap-2 text-xs",
+                    rangePreset === 'custom' ? "gradient-primary text-white shadow-md" : "hover:bg-accent text-muted-foreground"
+                  )}
+                >
+                  <CalendarIcon className="h-4 w-4" /> Rentang Tanggal
+                  <ChevronDown className="h-4 w-4 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 rounded-3xl overflow-hidden border-border shadow-2xl" align="end">
+                <Calendar
+                  initialFocus
+                  mode="range"
+                  defaultMonth={dateRange?.from}
+                  selected={dateRange}
+                  onSelect={(range) => {
+                      setDateRange(range);
+                      setRangePreset('custom');
+                  }}
+                  numberOfMonths={2}
+                  locale={id}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+
+          <div className="hidden xl:block h-10 w-px bg-border mx-2" />
+
+          <div className="grid grid-cols-2 gap-3 bg-muted/30 p-1.5 rounded-2xl border border-border/50 flex-1 xl:flex-none">
+            <div className="flex items-center gap-2 px-3 py-1 bg-background/50 rounded-xl">
+              <Label className="text-[9px] font-black uppercase text-muted-foreground whitespace-nowrap">Dari</Label>
+              <Input 
+                type="date" 
+                className="h-8 w-full bg-transparent border-none font-bold text-xs p-0 focus-visible:ring-0" 
+                value={dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : ''}
+                onChange={(e) => {
+                  const newDate = e.target.value ? new Date(e.target.value) : undefined;
+                  setDateRange(prev => ({ ...prev, from: newDate }));
+                  setRangePreset('custom');
+                }}
+              />
+            </div>
+            <div className="flex items-center gap-2 px-3 py-1 bg-background/50 rounded-xl">
+              <Label className="text-[9px] font-black uppercase text-muted-foreground whitespace-nowrap">Sampai</Label>
+              <Input 
+                type="date" 
+                className="h-8 w-full bg-transparent border-none font-bold text-xs p-0 focus-visible:ring-0" 
+                value={dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : ''}
+                onChange={(e) => {
+                  const newDate = e.target.value ? new Date(e.target.value) : undefined;
+                  setDateRange(prev => ({ ...prev, to: newDate }));
+                  setRangePreset('custom');
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="relative flex-1">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Input 
+              placeholder="Cari supplier atau no invoice..." 
+              value={search} 
+              onChange={(e) => setSearch(e.target.value)} 
+              className="pl-12 bg-secondary/50 border-border rounded-2xl h-12 text-sm"
+            />
+          </div>
+        </div>
       </div>
 
       <div className="bg-card rounded-3xl border border-border overflow-hidden shadow-sm">

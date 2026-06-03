@@ -43,10 +43,10 @@ export default function Dashboard() {
   const storeName = config?.store_name || 'WUDkopi';
   
   const [dateRange, setDateRange] = useState<DateRange | undefined>({
-    from: startOfMonth(new Date()),
+    from: startOfDay(new Date()),
     to: endOfDay(new Date()),
   });
-  const [rangePreset, setRangePreset] = useState<string>('thisMonth');
+  const [rangePreset, setRangePreset] = useState<string>('today');
 
   // Fetch Data
   const { data: transactions = [], isLoading: isLoadingTransactions } = useQuery({

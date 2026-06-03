@@ -79,10 +79,10 @@ import { useReactToPrint } from 'react-to-print';
 export default function SalesReport() {
   const [search, setSearch] = useState('');
   const [dateRange, setDateRange] = useState<DateRangeType | undefined>({
-    from: startOfMonth(new Date()),
+    from: startOfDay(new Date()),
     to: endOfDay(new Date()),
   });
-  const [rangePreset, setRangePreset] = useState<string>('thismonth');
+  const [rangePreset, setRangePreset] = useState<string>('today');
   const [cashierId, setCashierId] = useState<string>('all');
   const [paymentFilter, setPaymentFilter] = useState<string>('all');
   const [selectedTransaction, setSelectedTransaction] = useState<any>(null);
@@ -617,7 +617,7 @@ export default function SalesReport() {
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={5} className="h-32 text-center text-muted-foreground">
+                <TableCell colSpan={6} className="h-32 text-center text-muted-foreground">
                   <div className="flex flex-col items-center gap-2">
                     <Loader2 className="h-8 w-8 animate-spin text-primary" />
                     <p className="text-xs font-bold animate-pulse">Memuat Data Penjualan...</p>
@@ -626,7 +626,7 @@ export default function SalesReport() {
               </TableRow>
             ) : filteredTransactions.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="h-32 text-center text-muted-foreground italic">
+                <TableCell colSpan={6} className="h-32 text-center text-muted-foreground italic">
                   Belum ada transaksi di periode ini.
                 </TableCell>
               </TableRow>

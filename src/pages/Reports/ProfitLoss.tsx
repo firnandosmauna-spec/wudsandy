@@ -61,10 +61,10 @@ import { useReactToPrint } from 'react-to-print';
 
 export default function ProfitLoss() {
   const [dateRange, setDateRange] = useState<DateRangeType | undefined>({
-    from: startOfMonth(new Date()),
+    from: startOfDay(new Date()),
     to: endOfDay(new Date()),
   });
-  const [rangePreset, setRangePreset] = useState<string>('thismonth');
+  const [rangePreset, setRangePreset] = useState<string>('today');
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
 

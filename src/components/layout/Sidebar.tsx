@@ -17,7 +17,8 @@ import {
   Receipt,
   Layers,
   Wallet,
-  Coffee
+  Coffee,
+  Globe
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useState } from 'react';
@@ -25,34 +26,34 @@ import { useAuth } from '@/hooks/useAuth';
 import { useStoreConfig } from '@/hooks/useStoreConfig';
 
 const menuItems = [
-  { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
-  { icon: ShoppingCart, label: 'Kasir (POS)', path: '/pos' },
-  { icon: Layers, label: 'Shift Kasir', path: '/shift' },
-  { icon: Receipt, label: 'Riwayat Transaksi', path: '/transactions' },
+  { icon: "📊", label: 'Dashboard', path: '/dashboard' },
+  { icon: "💰", label: 'Kasir (POS)', path: '/pos' },
+  { icon: "🕒", label: 'Shift Kasir', path: '/shift' },
+  { icon: "🧾", label: 'Riwayat Transaksi', path: '/transactions' },
   { 
     label: 'Laporan', 
     isHeader: true 
   },
-  { icon: BarChart3, label: 'Laba Rugi', path: '/reports/profit-loss' },
-  { icon: BarChart3, label: 'Penjualan', path: '/reports/sales' },
-  { icon: Coffee, label: 'Laporan Bubuk Kopi', path: '/reports/coffee-powder' },
-  { icon: BarChart3, label: 'Pembelian', path: '/reports/purchases' },
+  { icon: "📈", label: 'Laba Rugi', path: '/reports/profit-loss' },
+  { icon: "🛍️", label: 'Penjualan', path: '/reports/sales' },
+  { icon: "☕", label: 'Laporan Bahan', path: '/reports/coffee-powder' },
+  { icon: "🛒", label: 'Pembelian', path: '/reports/purchases' },
   { 
     label: 'Manajemen', 
     isHeader: true 
   },
-  { icon: Package, label: 'Kelola Produk', path: '/inventory/products' },
-  { icon: Tags, label: 'Kelola Kategori', path: '/inventory/categories' },
-  { icon: Users, label: 'Pelanggan', path: '/customers' },
-  { icon: Store, label: 'Kelola Toko', path: '/store' },
-  { icon: UserCog, label: 'Kelola Pengguna', path: '/users' },
-  { icon: Wallet, label: 'Pengaturan Gaji', path: '/users/payroll' },
+  { icon: "🍰", label: 'Kelola Produk', path: '/inventory/products' },
+  { icon: "🏷️", label: 'Kelola Kategori', path: '/inventory/categories' },
+  { icon: "👥", label: 'Pelanggan', path: '/customers' },
+  { icon: "🏠", label: 'Kelola Toko', path: '/store' },
+  { icon: "🔑", label: 'Kelola Pengguna', path: '/users' },
+  { icon: "💸", label: 'Pengaturan Gaji', path: '/users/payroll' },
   { 
     label: 'Sistem', 
     isHeader: true 
   },
-  { icon: Database, label: 'Backup & Restore', path: '/backup' },
-  { icon: Settings, label: 'Pengaturan', path: '/settings' },
+  { icon: "💾", label: 'Backup & Restore', path: '/backup' },
+  { icon: "⚙️", label: 'Pengaturan', path: '/settings' },
 ];
 
 interface SidebarProps {
@@ -110,21 +111,26 @@ export function Sidebar({ onClose }: SidebarProps) {
             );
           }
 
-          const Icon = item.icon!;
+          const icon = item.icon;
           return (
             <NavLink
               key={item.path}
               to={item.path!}
-              end={item.path !== '/pos'} // Most items should match exactly, POS might have subroutes
+              end={item.path !== '/pos' && item.path !== '/landing-admin'} 
               onClick={onClose}
               className={({ isActive }) => cn(
-                "group flex items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium transition-all duration-200",
+                "group flex items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-black transition-all duration-300 uppercase tracking-tighter",
                 isActive 
-                  ? "gradient-primary text-primary-foreground shadow-lg pos-shadow" 
-                  : "text-muted-foreground hover:bg-accent hover:text-foreground"
+                  ? "bg-[#ec4899] text-white shadow-lg shadow-pink-200 scale-[1.02]" 
+                  : "text-[#5d4037]/60 hover:bg-[#f0f9f1] hover:text-[#ec4899]"
               )}
             >
-              <Icon className={cn("h-5 w-5 shrink-0", !collapsed && "group-hover:scale-110 transition-transform")} />
+              <span className={cn(
+                "text-2xl shrink-0 transition-transform duration-300 drop-shadow-md",
+                !collapsed && "group-hover:scale-125 group-hover:rotate-12"
+              )}>
+                {icon}
+              </span>
               {!collapsed && <span className="truncate">{item.label}</span>}
             </NavLink>
           );
@@ -132,18 +138,18 @@ export function Sidebar({ onClose }: SidebarProps) {
       </nav>
 
       {/* Footer */}
-      <div className="border-t border-border p-2">
+      <div className="border-t border-pink-100 p-2">
         <button
           onClick={() => {
             signOut();
             if (onClose) onClose();
           }}
           className={cn(
-            "flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-medium text-destructive hover:bg-destructive/10 transition-colors",
+            "flex w-full items-center gap-3 rounded-2xl px-4 py-3.5 text-sm font-black text-rose-500 hover:bg-rose-50 transition-all uppercase tracking-tighter",
             collapsed && "justify-center"
           )}
         >
-          <LogOut className="h-5 w-5 shrink-0" />
+          <span className="text-xl drop-shadow-md">🚪</span>
           {!collapsed && <span>Keluar</span>}
         </button>
       </div>

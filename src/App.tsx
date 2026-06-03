@@ -7,6 +7,7 @@ import { AuthProvider } from "@/hooks/useAuth";
 import { CartProvider } from "@/hooks/useCart";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import MainLayout from "@/components/layout/MainLayout";
+import Landing from "./pages/Landing";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
@@ -35,51 +36,54 @@ const queryClient = new QueryClient();
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <AuthProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner position="top-center" />
-        <ErrorBoundary>
-          <BrowserRouter>
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/login" element={<Login />} />
-              
-              {/* Root Redirects based on Auth in Index */}
-              <Route path="/" element={<Index />} />
+      <CartProvider>
+        <TooltipProvider>
+          <Sonner position="top-center" />
+          <ErrorBoundary>
+            <BrowserRouter>
+              <Routes>
+                {/* Public Routes - Direct to POS Login */}
+                <Route path="/" element={<Login />} />
+                <Route path="/login" element={<Login />} />
+                
+                {/* Auth Redirect Logic */}
+                <Route path="/home" element={<Index />} />
 
-              {/* Administrative Routes wrapped in MainLayout */}
-              <Route path="/dashboard" element={<MainLayout><Dashboard /></MainLayout>} />
-              <Route path="/shift" element={<MainLayout><ShiftManagement /></MainLayout>} />
-              <Route path="/transactions" element={<MainLayout><TransactionHistory /></MainLayout>} />
-              
-              {/* Reports */}
-              <Route path="/reports/profit-loss" element={<MainLayout><ProfitLossReport /></MainLayout>} />
-              <Route path="/reports/sales" element={<MainLayout><SalesReport /></MainLayout>} />
-              <Route path="/reports/coffee-powder" element={<MainLayout><CoffeePowderReport /></MainLayout>} />
-              <Route path="/reports/purchases" element={<MainLayout><PurchaseReport /></MainLayout>} />
-              
-              {/* Inventory */}
-              <Route path="/inventory/products" element={<MainLayout><ProductManagement /></MainLayout>} />
-              <Route path="/inventory/categories" element={<MainLayout><CategoryManagement /></MainLayout>} />
-              
-              {/* Management */}
-              <Route path="/customers" element={<MainLayout><CustomerManagement /></MainLayout>} />
-              <Route path="/store" element={<MainLayout><StoreManagement /></MainLayout>} />
-              <Route path="/users" element={<MainLayout><UserManagement /></MainLayout>} />
-              <Route path="/users/payroll" element={<MainLayout><PayrollSettings /></MainLayout>} />
-              
-              {/* System */}
-              <Route path="/backup" element={<MainLayout><BackupRestore /></MainLayout>} />
-              <Route path="/settings" element={<MainLayout><Settings /></MainLayout>} />
-              
-              {/* Standalone POS with Cart State */}
-              <Route path="/pos" element={<CartProvider><POS /></CartProvider>} />
+                {/* Administrative Routes wrapped in MainLayout */}
+                <Route path="/dashboard" element={<MainLayout><Dashboard /></MainLayout>} />
+                <Route path="/shift" element={<MainLayout><ShiftManagement /></MainLayout>} />
+                <Route path="/transactions" element={<MainLayout><TransactionHistory /></MainLayout>} />
+                
+                {/* Reports */}
+                <Route path="/reports/profit-loss" element={<MainLayout><ProfitLossReport /></MainLayout>} />
+                <Route path="/reports/sales" element={<MainLayout><SalesReport /></MainLayout>} />
+                <Route path="/reports/coffee-powder" element={<MainLayout><CoffeePowderReport /></MainLayout>} />
+                <Route path="/reports/purchases" element={<MainLayout><PurchaseReport /></MainLayout>} />
+                
+                {/* Inventory */}
+                <Route path="/inventory/products" element={<MainLayout><ProductManagement /></MainLayout>} />
+                <Route path="/inventory/categories" element={<MainLayout><CategoryManagement /></MainLayout>} />
+                
+                {/* Management */}
+                <Route path="/customers" element={<MainLayout><CustomerManagement /></MainLayout>} />
+                <Route path="/store" element={<MainLayout><StoreManagement /></MainLayout>} />
+                <Route path="/users" element={<MainLayout><UserManagement /></MainLayout>} />
+                <Route path="/users/payroll" element={<MainLayout><PayrollSettings /></MainLayout>} />
+                
+                 
+                {/* POS System Routes */}
+                <Route path="/backup" element={<MainLayout><BackupRestore /></MainLayout>} />
+                <Route path="/settings" element={<MainLayout><Settings /></MainLayout>} />
+                
+                {/* Standalone POS */}
+                <Route path="/pos" element={<POS />} />
 
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </BrowserRouter>
-        </ErrorBoundary>
-      </TooltipProvider>
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </ErrorBoundary>
+        </TooltipProvider>
+      </CartProvider>
     </AuthProvider>
   </QueryClientProvider>
 );

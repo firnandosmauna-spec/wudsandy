@@ -30,14 +30,12 @@ export function Header() {
       </div>
 
       <div className="flex items-center gap-3">
-        <Button
-          variant="outline"
-          className="hidden sm:flex items-center gap-2 border-border hover:bg-muted rounded-xl transition-all h-10"
-          onClick={() => navigate('/dashboard')}
+        <a
+          href="/dashboard"
+          className="flex items-center justify-center border-2 border-pink-400 bg-[#ec4899] text-white rounded-xl h-10 font-black px-6 shadow-lg cursor-pointer no-underline text-xs uppercase tracking-widest hover:bg-[#db2777] transition-all"
         >
-          <LayoutDashboard className="h-4 w-4 text-muted-foreground" />
-          <span className="text-sm font-semibold">Dashboard</span>
-        </Button>
+          Dashboard
+        </a>
         <div className="hidden sm:flex items-center gap-2 rounded-full bg-secondary px-3 py-1.5 min-h-10">
           <User className="h-4 w-4 text-muted-foreground" />
           <span className="text-sm text-foreground truncate max-w-[150px]">

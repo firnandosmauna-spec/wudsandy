@@ -65,10 +65,10 @@ export default function TransactionHistory() {
   const storeName = config?.store_name || 'WUDkopi';
   const printRef = useRef<HTMLDivElement>(null);
   const [dateRange, setDateRange] = useState<DateRangeType | undefined>({
-    from: startOfMonth(new Date()),
+    from: startOfDay(new Date()),
     to: endOfDay(new Date()),
   });
-  const [rangePreset, setRangePreset] = useState<string>('thismonth');
+  const [rangePreset, setRangePreset] = useState<string>('today');
   const { data: profiles = [] } = useProfiles();
 
   // Fetch Transactions
