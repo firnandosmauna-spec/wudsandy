@@ -315,52 +315,95 @@ export default function SalesReport() {
     return profile?.full_name || 'System';
   };
 
-  const handleExportExcel = () => {
-    if (!filteredTransactions || filteredTransactions.length === 0) {
-      toast.error('Tidak ada data untuk diekspor');
+  const [isExporting, setIsExporting] = useState(false);
+
+  const handleExportExcel = async () => {
+    if (!dateRange?.from || !dateRange?.to) {
+      toast.error('Pilih rentang tanggal terlebih dahulu');
       return;
     }
 
+    setIsExporting(true);
+    toast.loading('Mengambil semua data penjualan...', { id: 'export' });
+
     try {
-      // Group transactions by date
-      const groupedData = filteredTransactions.reduce((acc, t) => {
+      // Fetch ALL transactions for the date range directly (no limit)
+      let allData: any[] = [];
+      let from = 0;
+      const batchSize = 1000;
+      const startDate = format(startOfDay(dateRange.from), "yyyy-MM-dd'T'HH:mm:ss") + 'Z';
+      const endDate = format(endOfDay(dateRange.to), "yyyy-MM-dd'T'HH:mm:ss") + 'Z';
+
+      while (true) {
+        let query = (supabase as any)
+          .from('transactions')
+          .select('id, created_at, receipt_number, payment_method, total_amount, user_id, profiles(full_name), transaction_items(quantity, price, product_name, product_id)')
+          .gte('created_at', startDate)
+          .lte('created_at', endDate)
+          .order('created_at', { ascending: true })
+          .range(from, from + batchSize - 1);
+
+        if (cashierId !== 'all') {
+          query = query.eq('user_id', cashierId);
+        }
+
+        const { data, error } = await query;
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+        allData = allData.concat(data);
+        if (data.length < batchSize) break;
+        from += batchSize;
+      }
+
+      if (allData.length === 0) {
+        toast.error('Tidak ada data untuk diekspor', { id: 'export' });
+        setIsExporting(false);
+        return;
+      }
+
+      // Group transactions by date — only Tanggal and Total
+      const groupedData = allData.reduce((acc: Record<string, number>, t: any) => {
         const dateStr = format(new Date(t.created_at), 'dd/MM/yyyy');
         if (!acc[dateStr]) {
           acc[dateStr] = 0;
         }
-        acc[dateStr] += t.adjustedTotal;
+        acc[dateStr] += Number(t.total_amount);
         return acc;
-      }, {} as Record<string, number>);
+      }, {});
 
-      const data = Object.entries(groupedData).map(([date, total]) => ({
+      const excelData = Object.entries(groupedData).map(([date, total]) => ({
         'Tanggal': date,
         'Total (Rp)': total
       }));
 
-      const ws = XLSX.utils.json_to_sheet(data);
+      const ws = XLSX.utils.json_to_sheet(excelData);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Laporan Penjualan");
 
-      // Auto-size columns robustly
-      if (data.length > 0) {
-        const keys = Object.keys(data[0]);
+      // Auto-size columns
+      if (excelData.length > 0) {
+        const keys = Object.keys(excelData[0]);
         const maxWidths = keys.map(key => {
           let maxLen = key.length;
-          for (const row of data) {
+          for (const row of excelData) {
             const val = row[key as keyof typeof row];
             const len = val ? val.toString().length : 0;
             if (len > maxLen) maxLen = len;
           }
-          return { wch: maxLen + 2 };
+          return { wch: Math.min(maxLen + 2, 50) };
         });
         ws['!cols'] = maxWidths;
       }
 
-      XLSX.writeFile(wb, `Laporan_Penjualan_${format(new Date(), 'yyyyMMdd_HHmm')}.xlsx`);
-      toast.success('Laporan Excel berhasil diunduh');
+      const fromStr = format(dateRange.from, 'ddMMyyyy');
+      const toStr = format(dateRange.to, 'ddMMyyyy');
+      XLSX.writeFile(wb, `Laporan_Penjualan_${fromStr}_${toStr}.xlsx`);
+      toast.success(`Berhasil export ${allData.length} transaksi ke Excel!`, { id: 'export' });
     } catch (error) {
       console.error('Export Excel Error:', error);
-      toast.error('Gagal mengekspor data ke Excel');
+      toast.error('Gagal mengekspor data ke Excel', { id: 'export' });
+    } finally {
+      setIsExporting(false);
     }
   };
 
@@ -405,9 +448,14 @@ export default function SalesReport() {
               variant="outline" 
               className="rounded-xl border-border bg-card shadow-sm font-bold text-xs hover:bg-accent transition-all h-10 px-3"
               onClick={handleExportExcel}
-              disabled={isLoading || filteredTransactions.length === 0}
+              disabled={isLoading || isExporting}
             >
-              <TableIcon className="mr-2 h-3.5 w-3.5 text-emerald-500" /> Export Excel
+              {isExporting ? (
+                <Loader2 className="mr-2 h-3.5 w-3.5 animate-spin text-emerald-500" />
+              ) : (
+                <TableIcon className="mr-2 h-3.5 w-3.5 text-emerald-500" />
+              )}
+              {isExporting ? 'Mengambil Data...' : 'Export Excel'}
             </Button>
             <Button 
               variant="outline"
