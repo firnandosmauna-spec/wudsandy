@@ -452,7 +452,8 @@ export default function SalesReport() {
                   className="h-7 w-full bg-transparent border-none font-bold text-[10px] sm:text-xs p-0 focus-visible:ring-0" 
                   value={dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : ''}
                   onChange={(e) => {
-                    const newDate = e.target.value ? new Date(e.target.value) : undefined;
+                    // Tambahkan T00:00:00 agar diparsing sebagai waktu lokal (WIB), bukan UTC
+                    const newDate = e.target.value ? new Date(e.target.value + 'T00:00:00') : undefined;
                     setDateRange(prev => ({ ...prev, from: newDate }));
                     setRangePreset('custom');
                   }}
@@ -465,7 +466,8 @@ export default function SalesReport() {
                   className="h-7 w-full bg-transparent border-none font-bold text-[10px] sm:text-xs p-0 focus-visible:ring-0" 
                   value={dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : ''}
                   onChange={(e) => {
-                    const newDate = e.target.value ? new Date(e.target.value) : undefined;
+                    // Tambahkan T00:00:00 agar diparsing sebagai waktu lokal (WIB), bukan UTC
+                    const newDate = e.target.value ? new Date(e.target.value + 'T00:00:00') : undefined;
                     setDateRange(prev => ({ ...prev, to: newDate }));
                     setRangePreset('custom');
                   }}
