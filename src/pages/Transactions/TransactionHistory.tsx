@@ -87,10 +87,10 @@ export default function TransactionHistory() {
         .limit(50000);
 
       if (dateRange?.from) {
-        query = query.gte('created_at', startOfDay(dateRange.from).toISOString());
+        query = query.gte('created_at', format(startOfDay(dateRange.from), "yyyy-MM-dd'T'HH:mm:ss") + 'Z');
       }
       if (dateRange?.to) {
-        query = query.lte('created_at', endOfDay(dateRange.to).toISOString());
+        query = query.lte('created_at', format(endOfDay(dateRange.to), "yyyy-MM-dd'T'HH:mm:ss") + 'Z');
       }
 
       const { data, error } = await query;
@@ -331,7 +331,11 @@ export default function TransactionHistory() {
                   className="h-7 w-full bg-transparent border-none font-bold text-[10px] sm:text-xs p-0 focus-visible:ring-0" 
                   value={dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : ''}
                   onChange={(e) => {
-                    const newDate = e.target.value ? new Date(e.target.value) : undefined;
+                    let newDate = undefined;
+                    if (e.target.value) {
+                      const [year, month, day] = e.target.value.split('-');
+                      newDate = new Date(Number(year), Number(month) - 1, Number(day));
+                    }
                     setDateRange(prev => ({ ...prev, from: newDate }));
                     setRangePreset('custom');
                   }}
@@ -344,7 +348,11 @@ export default function TransactionHistory() {
                   className="h-7 w-full bg-transparent border-none font-bold text-[10px] sm:text-xs p-0 focus-visible:ring-0" 
                   value={dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : ''}
                   onChange={(e) => {
-                    const newDate = e.target.value ? new Date(e.target.value) : undefined;
+                    let newDate = undefined;
+                    if (e.target.value) {
+                      const [year, month, day] = e.target.value.split('-');
+                      newDate = new Date(Number(year), Number(month) - 1, Number(day));
+                    }
                     setDateRange(prev => ({ ...prev, to: newDate }));
                     setRangePreset('custom');
                   }}
