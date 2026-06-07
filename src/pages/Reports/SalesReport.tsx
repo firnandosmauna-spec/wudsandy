@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { 
@@ -109,9 +109,9 @@ export default function SalesReport() {
     queryFn: async () => {
       let query = (supabase as any)
         .from('transactions')
-        .select('*, profiles(full_name), transaction_items(*, products(name, category_id))')
+        .select('id, created_at, receipt_number, payment_method, total_amount, user_id, profiles(full_name), transaction_items(quantity, price, product_name, product_id)')
         .order('created_at', { ascending: false })
-        .limit(50000);
+        .limit(3000);
 
       if (cashierId !== 'all') {
         query = query.eq('user_id', cashierId);
@@ -255,6 +255,9 @@ export default function SalesReport() {
     });
   }, [transactions]);
 
+  const [page, setPage] = useState(1);
+  const ITEMS_PER_PAGE = 50;
+
   const filteredTransactions = useMemo(() => {
     return processedTransactions.filter(t => {
       const matchesSearch = t.id.toLowerCase().includes(search.toLowerCase()) ||
@@ -273,6 +276,11 @@ export default function SalesReport() {
       return matchesSearch && matchesPayment && matchesManualFilter;
     });
   }, [processedTransactions, search, paymentFilter, showManualOnly]);
+
+  // Reset page when filters change (separate from useMemo to avoid re-render loop)
+  useEffect(() => {
+    setPage(1);
+  }, [search, paymentFilter, showManualOnly]);
 
   const totalSales = useMemo(() => {
     return filteredTransactions.reduce((sum, t) => sum + t.adjustedTotal, 0);
@@ -620,7 +628,7 @@ export default function SalesReport() {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredTransactions.map((t) => (
+              filteredTransactions.slice(0, page * ITEMS_PER_PAGE).map((t) => (
                 <TableRow key={t.id} className="hover:bg-accent/30 transition-all group">
                   <TableCell className="px-6 py-4">
                     <div className="text-sm font-bold text-foreground">
@@ -691,6 +699,17 @@ export default function SalesReport() {
             )}
           </TableBody>
         </Table>
+        {filteredTransactions.length > page * ITEMS_PER_PAGE && (
+          <div className="flex justify-center p-4 border-t border-border">
+            <Button 
+              variant="outline" 
+              onClick={() => setPage(p => p + 1)}
+              className="rounded-xl font-bold bg-muted/50 hover:bg-accent"
+            >
+              Muat Lebih Banyak ({filteredTransactions.length - (page * ITEMS_PER_PAGE)} tersisa)
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Add Transaction Dialog */}

@@ -78,13 +78,13 @@ export default function TransactionHistory() {
       let query = (supabase as any)
         .from('transactions')
         .select(`
-          *,
+          id, created_at, receipt_number, payment_method, total_amount, user_id, table_number,
           profiles(full_name),
           customers(name),
-          transaction_items(*, products(name, category_id))
+          transaction_items(id, product_id, quantity, price, product_name, products(category_id))
         `)
         .order('created_at', { ascending: false })
-        .limit(50000);
+        .limit(3000);
 
       if (dateRange?.from) {
         query = query.gte('created_at', format(startOfDay(dateRange.from), "yyyy-MM-dd'T'HH:mm:ss") + 'Z');
@@ -128,18 +128,28 @@ export default function TransactionHistory() {
     }).filter(t => t.adjustedTotal > 0) || [];
   }, [transactions]);
 
-  const filteredTransactions = processedTransactions.filter(t => {
-    const matchesSearch = t.id.toLowerCase().includes(search.toLowerCase()) ||
-      (t.receipt_number && t.receipt_number.toLowerCase().includes(search.toLowerCase())) ||
-      t.payment_method.toLowerCase().includes(search.toLowerCase()) ||
-      t.profiles?.full_name?.toLowerCase().includes(search.toLowerCase()) ||
-      t.customers?.name?.toLowerCase().includes(search.toLowerCase());
-    
-    const hasManualItems = (t.transaction_items || []).some((item: any) => !item.product_id);
-    const matchesManualFilter = !showManualOnly || hasManualItems;
+  const [page, setPage] = useState(1);
+  const ITEMS_PER_PAGE = 50;
 
-    return matchesSearch && matchesManualFilter;
-  });
+  const filteredTransactions = useMemo(() => {
+    return processedTransactions.filter(t => {
+      const matchesSearch = t.id.toLowerCase().includes(search.toLowerCase()) ||
+        (t.receipt_number && t.receipt_number.toLowerCase().includes(search.toLowerCase())) ||
+        t.payment_method.toLowerCase().includes(search.toLowerCase()) ||
+        t.profiles?.full_name?.toLowerCase().includes(search.toLowerCase()) ||
+        t.customers?.name?.toLowerCase().includes(search.toLowerCase());
+      
+      const hasManualItems = (t.transaction_items || []).some((item: any) => !item.product_id);
+      const matchesManualFilter = !showManualOnly || hasManualItems;
+
+      return matchesSearch && matchesManualFilter;
+    });
+  }, [processedTransactions, search, showManualOnly]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [search, showManualOnly]);
 
   const getPaymentIcon = (method: string) => {
     if (method.toLowerCase().includes('tunai')) return <Banknote className="h-4 w-4 text-emerald-500" />;
@@ -435,7 +445,7 @@ export default function TransactionHistory() {
                 </TableCell>
               </TableRow>
             ) : (
-              filteredTransactions?.map((t) => (
+              filteredTransactions?.slice(0, page * ITEMS_PER_PAGE).map((t) => (
                 <TableRow key={t.id} className="hover:bg-muted/30 transition-colors">
                   <TableCell className="text-xs text-muted-foreground font-medium">
                     {format(new Date(t.created_at), 'dd/MM/yyyy HH:mm')}
@@ -490,6 +500,17 @@ export default function TransactionHistory() {
             )}
           </TableBody>
         </Table>
+        {filteredTransactions.length > page * ITEMS_PER_PAGE && (
+          <div className="flex justify-center p-4 border-t border-border">
+            <Button 
+              variant="outline" 
+              onClick={() => setPage(p => p + 1)}
+              className="rounded-xl font-bold bg-muted/50 hover:bg-accent"
+            >
+              Muat Lebih Banyak ({filteredTransactions.length - (page * ITEMS_PER_PAGE)} tersisa)
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Audit Detail Dialog */}
