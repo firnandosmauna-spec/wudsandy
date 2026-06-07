@@ -104,7 +104,7 @@ export default function SalesReport() {
   const { data: profiles = [] } = useProfiles();
 
   // Fetch Transactions
-  const { data: transactions = [], isLoading } = useQuery({
+  const { data: transactions = [], isLoading, error: queryError } = useQuery({
     queryKey: ['transactions_report', dateRange, cashierId],
     queryFn: async () => {
       let query = (supabase as any)
@@ -127,7 +127,8 @@ export default function SalesReport() {
       const { data, error } = await query;
       if (error) throw error;
       return data;
-    }
+    },
+    retry: 1
   });
 
   // Fetch Transaction Items
@@ -245,19 +246,13 @@ export default function SalesReport() {
     setIsAddOpen(true);
   };
 
-  const COFFEE_POWDER_CATEGORY_ID = 'ccde4373-c563-4339-b0fe-efa2ef007129';
-
   const processedTransactions = useMemo(() => {
     return transactions.map(t => {
-      const bubukKopiTotal = (t.transaction_items || [])
-        .filter((item: any) => item.products?.category_id === COFFEE_POWDER_CATEGORY_ID)
-        .reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
-      
       return {
         ...t,
-        adjustedTotal: Number(t.total_amount) - bubukKopiTotal
+        adjustedTotal: Number(t.total_amount)
       };
-    }).filter(t => t.adjustedTotal > 0);
+    });
   }, [transactions]);
 
   const filteredTransactions = useMemo(() => {
@@ -319,13 +314,19 @@ export default function SalesReport() {
     }
 
     try {
-      const data = filteredTransactions.map(t => ({
-        'Tanggal': format(new Date(t.created_at), 'dd/MM/yyyy HH:mm'),
-        'ID Transaksi': (t.receipt_number || t.id.substring(0, 8)).toUpperCase(),
-        'Metode Bayar': t.payment_method || 'Tunai',
-        'Kasir': getCashierName(t),
-        'Produk': (t.transaction_items || []).map((i: any) => `${i.product_name || i.products?.name || 'Produk'} (${i.quantity})`).join(', '),
-        'Total (Rp)': t.adjustedTotal
+      // Group transactions by date
+      const groupedData = filteredTransactions.reduce((acc, t) => {
+        const dateStr = format(new Date(t.created_at), 'dd/MM/yyyy');
+        if (!acc[dateStr]) {
+          acc[dateStr] = 0;
+        }
+        acc[dateStr] += t.adjustedTotal;
+        return acc;
+      }, {} as Record<string, number>);
+
+      const data = Object.entries(groupedData).map(([date, total]) => ({
+        'Tanggal': date,
+        'Total (Rp)': total
       }));
 
       const ws = XLSX.utils.json_to_sheet(data);
@@ -590,6 +591,17 @@ export default function SalesReport() {
                   <div className="flex flex-col items-center gap-2">
                     <Loader2 className="h-8 w-8 animate-spin text-primary" />
                     <p className="text-xs font-bold animate-pulse">Memuat Data Penjualan...</p>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : queryError ? (
+              <TableRow>
+                <TableCell colSpan={6} className="h-32 text-center text-red-500">
+                  <div className="flex flex-col items-center gap-2">
+                    <AlertCircle className="h-8 w-8" />
+                    <p className="text-sm font-bold">Gagal memuat data</p>
+                    <p className="text-xs">{String((queryError as any)?.message || queryError)}</p>
+                    <p className="text-xs mt-2 italic text-muted-foreground">Rentang tanggal mungkin terlalu panjang sehingga query memakan waktu lama (timeout).</p>
                   </div>
                 </TableCell>
               </TableRow>
