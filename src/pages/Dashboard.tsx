@@ -46,14 +46,35 @@ export default function Dashboard() {
 
   // Fetch Data
   const { data: transactions = [], isLoading: isLoadingTransactions } = useQuery({
-    queryKey: ['dashboard_transactions'],
+    queryKey: ['dashboard_transactions', dateRange],
     queryFn: async () => {
-      const { data, error } = await (supabase as any)
-        .from('transactions')
-        .select('*, transaction_items(*, products(category_id))')
-        .order('created_at', { ascending: false });
-      if (error) throw error;
-      return data;
+      let allData: any[] = [];
+      let fromRow = 0;
+      const batchSize = 1000;
+      
+      while (true) {
+        let query = (supabase as any)
+          .from('transactions')
+          .select('*, transaction_items(*, products(category_id))')
+          .order('created_at', { ascending: false })
+          .range(fromRow, fromRow + batchSize - 1);
+
+        if (dateRange?.from) {
+          query = query.gte('created_at', startOfDay(dateRange.from).toISOString());
+        }
+        if (dateRange?.to) {
+          query = query.lte('created_at', endOfDay(dateRange.to).toISOString());
+        }
+
+        const { data, error } = await query;
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+        
+        allData = allData.concat(data);
+        if (data.length < batchSize) break;
+        fromRow += batchSize;
+      }
+      return allData;
     }
   });
 
