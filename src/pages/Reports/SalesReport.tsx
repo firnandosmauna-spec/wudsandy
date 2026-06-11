@@ -283,26 +283,26 @@ export default function SalesReport() {
   }, [search, paymentFilter, showManualOnly]);
 
   const totalSales = useMemo(() => {
-    return filteredTransactions.reduce((sum, t) => sum + t.adjustedTotal, 0);
+    return filteredTransactions.reduce((sum, t) => sum + (Number(t.adjustedTotal) || 0), 0);
   }, [filteredTransactions]);
 
   const totalTunai = useMemo(() => {
-    return processedTransactions
+    return filteredTransactions
       .filter(t => {
         const method = (t.payment_method || 'Tunai').toLowerCase().trim();
         return method === 'tunai' || method === 'cash';
       })
-      .reduce((sum, t) => sum + t.adjustedTotal, 0);
-  }, [processedTransactions]);
+      .reduce((sum, t) => sum + (Number(t.adjustedTotal) || 0), 0);
+  }, [filteredTransactions]);
 
   const totalNonTunai = useMemo(() => {
-    return processedTransactions
+    return filteredTransactions
       .filter(t => {
         const method = (t.payment_method || 'Tunai').toLowerCase().trim();
         return method !== 'tunai' && method !== 'cash';
       })
-      .reduce((sum, t) => sum + t.adjustedTotal, 0);
-  }, [processedTransactions]);
+      .reduce((sum, t) => sum + (Number(t.adjustedTotal) || 0), 0);
+  }, [filteredTransactions]);
 
   const handlePrint = useReactToPrint({
     contentRef: printRef,
