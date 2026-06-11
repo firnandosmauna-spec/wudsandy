@@ -46,7 +46,7 @@ export default function Dashboard() {
 
   // Fetch Data
   const { data: transactions = [], isLoading: isLoadingTransactions } = useQuery({
-    queryKey: ['dashboard_transactions', dateRange],
+    queryKey: ['dashboard_transactions', dateRange?.from?.toISOString(), dateRange?.to?.toISOString()],
     queryFn: async () => {
       let allData: any[] = [];
       let fromRow = 0;
@@ -118,10 +118,7 @@ export default function Dashboard() {
         ...t,
         adjustedTotal: Number(t.total_amount) - bubukKopiTotal
       };
-    }).filter((t: any) => {
-      const date = parseISO(t.created_at);
-      return isWithinInterval(date, { start, end }) && t.adjustedTotal > 0;
-    });
+    }).filter((t: any) => t.adjustedTotal > 0);
 
     const totalSales = periodTransactions.reduce((acc, t) => acc + (t.adjustedTotal || 0), 0);
     const totalTransactions = periodTransactions.length;
@@ -243,7 +240,11 @@ export default function Dashboard() {
                   className="h-7 w-full bg-transparent border-none font-bold text-[10px] sm:text-xs p-0 focus-visible:ring-0" 
                   value={dateRange?.from ? format(dateRange.from, 'yyyy-MM-dd') : ''}
                   onChange={(e) => {
-                    const newDate = e.target.value ? new Date(e.target.value) : undefined;
+                    let newDate = undefined;
+                    if (e.target.value) {
+                      const [year, month, day] = e.target.value.split('-');
+                      newDate = new Date(Number(year), Number(month) - 1, Number(day));
+                    }
                     setDateRange(prev => ({ ...prev, from: newDate }));
                     setRangePreset('custom');
                   }}
@@ -256,7 +257,11 @@ export default function Dashboard() {
                   className="h-7 w-full bg-transparent border-none font-bold text-[10px] sm:text-xs p-0 focus-visible:ring-0" 
                   value={dateRange?.to ? format(dateRange.to, 'yyyy-MM-dd') : ''}
                   onChange={(e) => {
-                    const newDate = e.target.value ? new Date(e.target.value) : undefined;
+                    let newDate = undefined;
+                    if (e.target.value) {
+                      const [year, month, day] = e.target.value.split('-');
+                      newDate = new Date(Number(year), Number(month) - 1, Number(day));
+                    }
                     setDateRange(prev => ({ ...prev, to: newDate }));
                     setRangePreset('custom');
                   }}
