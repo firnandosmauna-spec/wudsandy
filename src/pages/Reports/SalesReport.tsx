@@ -107,26 +107,37 @@ export default function SalesReport() {
   const { data: transactions = [], isLoading, error: queryError } = useQuery({
     queryKey: ['transactions_report', dateRange, cashierId],
     queryFn: async () => {
-      let query = (supabase as any)
-        .from('transactions')
-        .select('id, created_at, receipt_number, payment_method, total_amount, user_id, profiles(full_name), transaction_items(quantity, price, product_name, product_id)')
-        .order('created_at', { ascending: false })
-        .limit(3000);
+      let allData: any[] = [];
+      let fromRow = 0;
+      const batchSize = 1000;
+      
+      while (true) {
+        let query = (supabase as any)
+          .from('transactions')
+          .select('id, created_at, receipt_number, payment_method, total_amount, user_id, profiles(full_name), transaction_items(quantity, price, product_name, product_id)')
+          .order('created_at', { ascending: false })
+          .range(fromRow, fromRow + batchSize - 1);
 
-      if (cashierId !== 'all') {
-        query = query.eq('user_id', cashierId);
-      }
+        if (cashierId !== 'all') {
+          query = query.eq('user_id', cashierId);
+        }
 
-      if (dateRange?.from) {
-        query = query.gte('created_at', startOfDay(dateRange.from).toISOString());
-      }
-      if (dateRange?.to) {
-        query = query.lte('created_at', endOfDay(dateRange.to).toISOString());
-      }
+        if (dateRange?.from) {
+          query = query.gte('created_at', startOfDay(dateRange.from).toISOString());
+        }
+        if (dateRange?.to) {
+          query = query.lte('created_at', endOfDay(dateRange.to).toISOString());
+        }
 
-      const { data, error } = await query;
-      if (error) throw error;
-      return data;
+        const { data, error } = await query;
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+        
+        allData = allData.concat(data);
+        if (data.length < batchSize) break;
+        fromRow += batchSize;
+      }
+      return allData;
     },
     retry: 1
   });

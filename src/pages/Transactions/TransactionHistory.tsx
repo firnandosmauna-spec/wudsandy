@@ -74,27 +74,38 @@ export default function TransactionHistory() {
   const { data: transactions, isLoading } = useQuery({
     queryKey: ['transaction_history', dateRange],
     queryFn: async () => {
-      let query = (supabase as any)
-        .from('transactions')
-        .select(`
-          id, created_at, receipt_number, payment_method, total_amount, user_id, table_number,
-          profiles(full_name),
-          customers(name),
-          transaction_items(id, product_id, quantity, price, product_name, products(category_id))
-        `)
-        .order('created_at', { ascending: false })
-        .limit(3000);
+      let allData: any[] = [];
+      let fromRow = 0;
+      const batchSize = 1000;
+      
+      while (true) {
+        let query = (supabase as any)
+          .from('transactions')
+          .select(`
+            id, created_at, receipt_number, payment_method, total_amount, user_id, table_number,
+            profiles(full_name),
+            customers(name),
+            transaction_items(id, product_id, quantity, price, product_name, products(category_id))
+          `)
+          .order('created_at', { ascending: false })
+          .range(fromRow, fromRow + batchSize - 1);
 
-      if (dateRange?.from) {
-        query = query.gte('created_at', startOfDay(dateRange.from).toISOString());
-      }
-      if (dateRange?.to) {
-        query = query.lte('created_at', endOfDay(dateRange.to).toISOString());
-      }
+        if (dateRange?.from) {
+          query = query.gte('created_at', startOfDay(dateRange.from).toISOString());
+        }
+        if (dateRange?.to) {
+          query = query.lte('created_at', endOfDay(dateRange.to).toISOString());
+        }
 
-      const { data, error } = await query;
-      if (error) throw error;
-      return data;
+        const { data, error } = await query;
+        if (error) throw error;
+        if (!data || data.length === 0) break;
+        
+        allData = allData.concat(data);
+        if (data.length < batchSize) break;
+        fromRow += batchSize;
+      }
+      return allData;
     }
   });
 
