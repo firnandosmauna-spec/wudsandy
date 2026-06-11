@@ -86,10 +86,10 @@ export default function TransactionHistory() {
         .limit(3000);
 
       if (dateRange?.from) {
-        query = query.gte('created_at', format(startOfDay(dateRange.from), "yyyy-MM-dd'T'HH:mm:ss") + 'Z');
+        query = query.gte('created_at', startOfDay(dateRange.from).toISOString());
       }
       if (dateRange?.to) {
-        query = query.lte('created_at', format(endOfDay(dateRange.to), "yyyy-MM-dd'T'HH:mm:ss") + 'Z');
+        query = query.lte('created_at', endOfDay(dateRange.to).toISOString());
       }
 
       const { data, error } = await query;
@@ -653,7 +653,7 @@ export default function TransactionHistory() {
                     </td>
                     <td className="py-4 px-2 uppercase">{t.profiles?.full_name || 'Admin'}</td>
                     <td className="py-4 px-2 capitalize">{t.customers?.name || 'Umum'}</td>
-                    <td className="py-4 pl-2 text-right font-black">Rp {Number(t.total_amount).toLocaleString('id-ID')}</td>
+                    <td className="py-4 pl-2 text-right font-black">Rp {t.adjustedTotal.toLocaleString('id-ID')}</td>
                   </tr>
                 ))}
               </tbody>

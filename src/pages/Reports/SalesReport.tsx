@@ -118,10 +118,10 @@ export default function SalesReport() {
       }
 
       if (dateRange?.from) {
-        query = query.gte('created_at', format(startOfDay(dateRange.from), "yyyy-MM-dd'T'HH:mm:ss") + 'Z');
+        query = query.gte('created_at', startOfDay(dateRange.from).toISOString());
       }
       if (dateRange?.to) {
-        query = query.lte('created_at', format(endOfDay(dateRange.to), "yyyy-MM-dd'T'HH:mm:ss") + 'Z');
+        query = query.lte('created_at', endOfDay(dateRange.to).toISOString());
       }
 
       const { data, error } = await query;
@@ -331,8 +331,8 @@ export default function SalesReport() {
       let allData: any[] = [];
       let from = 0;
       const batchSize = 1000;
-      const startDate = format(startOfDay(dateRange.from), "yyyy-MM-dd'T'HH:mm:ss") + 'Z';
-      const endDate = format(endOfDay(dateRange.to), "yyyy-MM-dd'T'HH:mm:ss") + 'Z';
+      const startDate = startOfDay(dateRange.from).toISOString();
+      const endDate = endOfDay(dateRange.to).toISOString();
 
       while (true) {
         let query = (supabase as any)
@@ -361,8 +361,32 @@ export default function SalesReport() {
         return;
       }
 
+      // Apply UI filters to Excel data
+      const filteredExcelData = allData.filter(t => {
+        const matchesSearch = t.id.toLowerCase().includes(search.toLowerCase()) ||
+                              (t.receipt_number && t.receipt_number.toLowerCase().includes(search.toLowerCase())) ||
+                              (t.payment_method || '').toLowerCase().includes(search.toLowerCase());
+        
+        const method = (t.payment_method || 'Tunai').toLowerCase().trim();
+        const isTunai = method === 'tunai' || method === 'cash';
+        const matchesPayment = paymentFilter === 'all' || 
+                              (paymentFilter === 'tunai' && isTunai) ||
+                              (paymentFilter === 'nontunai' && !isTunai);
+        
+        const hasManualItems = (t.transaction_items || []).some((item: any) => !item.product_id);
+        const matchesManualFilter = !showManualOnly || hasManualItems;
+
+        return matchesSearch && matchesPayment && matchesManualFilter;
+      });
+
+      if (filteredExcelData.length === 0) {
+        toast.error('Tidak ada data untuk diekspor (sesuai filter aktif)', { id: 'export' });
+        setIsExporting(false);
+        return;
+      }
+
       // Group transactions by date — only Tanggal and Total
-      const groupedData = allData.reduce((acc: Record<string, number>, t: any) => {
+      const groupedData = filteredExcelData.reduce((acc: Record<string, number>, t: any) => {
         const dateStr = format(new Date(t.created_at), 'dd/MM/yyyy');
         if (!acc[dateStr]) {
           acc[dateStr] = 0;
