@@ -114,7 +114,7 @@ export default function SalesReport() {
       while (true) {
         let query = (supabase as any)
           .from('transactions')
-          .select('id, created_at, receipt_number, payment_method, total_amount, user_id, profiles(full_name), transaction_items(quantity, price, product_name, product_id)')
+          .select('id, created_at, receipt_number, payment_method, total_amount, user_id, profiles(full_name), transaction_items(quantity, price, product_name, product_id, products(category_id))')
           .order('created_at', { ascending: false })
           .range(fromRow, fromRow + batchSize - 1);
 
@@ -257,13 +257,19 @@ export default function SalesReport() {
     setIsAddOpen(true);
   };
 
+  const COFFEE_POWDER_CATEGORY_ID = 'ccde4373-c563-4339-b0fe-efa2ef007129';
+
   const processedTransactions = useMemo(() => {
     return transactions.map(t => {
+      const bubukKopiTotal = (t.transaction_items || [])
+        .filter((item: any) => item.products?.category_id === COFFEE_POWDER_CATEGORY_ID)
+        .reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
+
       return {
         ...t,
-        adjustedTotal: Number(t.total_amount)
+        adjustedTotal: Number(t.total_amount) - bubukKopiTotal
       };
-    });
+    }).filter(t => t.adjustedTotal > 0);
   }, [transactions]);
 
   const [page, setPage] = useState(1);
@@ -397,12 +403,22 @@ export default function SalesReport() {
       }
 
       // Group transactions by date — only Tanggal and Total
+      const COFFEE_POWDER_CATEGORY_ID = 'ccde4373-c563-4339-b0fe-efa2ef007129';
+      
       const groupedData = filteredExcelData.reduce((acc: Record<string, number>, t: any) => {
-        const dateStr = format(new Date(t.created_at), 'dd/MM/yyyy');
-        if (!acc[dateStr]) {
-          acc[dateStr] = 0;
+        const bubukKopiTotal = (t.transaction_items || [])
+          .filter((item: any) => item.products?.category_id === COFFEE_POWDER_CATEGORY_ID)
+          .reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
+        
+        const adjustedTotal = Number(t.total_amount) - bubukKopiTotal;
+        
+        if (adjustedTotal > 0) {
+          const dateStr = format(new Date(t.created_at), 'dd/MM/yyyy');
+          if (!acc[dateStr]) {
+            acc[dateStr] = 0;
+          }
+          acc[dateStr] += adjustedTotal;
         }
-        acc[dateStr] += Number(t.total_amount);
         return acc;
       }, {});
 

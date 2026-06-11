@@ -50,7 +50,7 @@ export default function Dashboard() {
     queryFn: async () => {
       const { data, error } = await (supabase as any)
         .from('transactions')
-        .select('*, transaction_items(*)')
+        .select('*, transaction_items(*, products(category_id))')
         .order('created_at', { ascending: false });
       if (error) throw error;
       return data;
@@ -79,6 +79,8 @@ export default function Dashboard() {
     }
   });
 
+  const COFFEE_POWDER_CATEGORY_ID = 'ccde4373-c563-4339-b0fe-efa2ef007129';
+
   // Filtering & Calculations
   const filteredData = useMemo(() => {
     if (!dateRange?.from || !dateRange?.to) return { stats: [], chartData: [], recent: [] };
@@ -86,12 +88,21 @@ export default function Dashboard() {
     const start = startOfDay(dateRange.from);
     const end = endOfDay(dateRange.to);
 
-    const periodTransactions = transactions.filter(t => {
+    const periodTransactions = transactions.map((t: any) => {
+      const bubukKopiTotal = (t.transaction_items || [])
+        .filter((item: any) => item.products?.category_id === COFFEE_POWDER_CATEGORY_ID)
+        .reduce((sum: number, item: any) => sum + (item.price * item.quantity), 0);
+      
+      return {
+        ...t,
+        adjustedTotal: Number(t.total_amount) - bubukKopiTotal
+      };
+    }).filter((t: any) => {
       const date = parseISO(t.created_at);
-      return isWithinInterval(date, { start, end });
+      return isWithinInterval(date, { start, end }) && t.adjustedTotal > 0;
     });
 
-    const totalSales = periodTransactions.reduce((acc, t) => acc + (Number(t.total_amount) || 0), 0);
+    const totalSales = periodTransactions.reduce((acc, t) => acc + (t.adjustedTotal || 0), 0);
     const totalTransactions = periodTransactions.length;
     
     const newCustomers = customers.filter(c => {
@@ -105,7 +116,7 @@ export default function Dashboard() {
     const dailyData: Record<string, number> = {};
     periodTransactions.forEach(t => {
       const day = format(parseISO(t.created_at), 'dd MMM', { locale: id });
-      dailyData[day] = (dailyData[day] || 0) + (Number(t.total_amount) || 0);
+      dailyData[day] = (dailyData[day] || 0) + (t.adjustedTotal || 0);
     });
 
     const chartData = Object.entries(dailyData).map(([name, sales]) => ({ name, sales }));
@@ -348,7 +359,7 @@ export default function Dashboard() {
                         </p>
                       </div>
                       <div className="text-sm font-black text-emerald-500">
-                        +Rp {Number(t.total_amount).toLocaleString('id-ID')}
+                        +Rp {(t.adjustedTotal || 0).toLocaleString('id-ID')}
                       </div>
                     </div>
                   ))}
