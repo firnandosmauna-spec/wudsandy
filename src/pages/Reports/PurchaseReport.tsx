@@ -316,7 +316,15 @@ export default function PurchaseReport() {
             >
               <FileText className="mr-2 h-3.5 w-3.5 text-red-500" /> Export PDF
             </Button>
-            <Dialog open={isAddOpen || !!editingPurchase} onOpenChange={(open) => !open && (setIsAddOpen(false), setEditingPurchase(null), resetForm())}>
+            <Dialog open={isAddOpen || !!editingPurchase} onOpenChange={(open) => {
+              if (open) {
+                setIsAddOpen(true);
+              } else {
+                setIsAddOpen(false);
+                setEditingPurchase(null);
+                resetForm();
+              }
+            }}>
                <DialogTrigger asChild>
                   <Button className="gradient-primary text-white rounded-xl h-10 px-4 font-black shadow-sm transition-all">
                       <Plus className="mr-2 h-3.5 w-3.5" /> Catat Baru
