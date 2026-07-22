@@ -89,7 +89,8 @@ export default function PurchaseReport() {
     supplier_name: '',
     total_amount: '',
     invoice_number: '',
-    description: ''
+    description: '',
+    created_at: format(new Date(), 'yyyy-MM-dd')
   });
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [purchaseToDelete, setPurchaseToDelete] = useState<any>(null);
@@ -190,7 +191,7 @@ export default function PurchaseReport() {
   });
 
   const resetForm = () => {
-    setFormData({ supplier_name: '', total_amount: '', invoice_number: '', description: '' });
+    setFormData({ supplier_name: '', total_amount: '', invoice_number: '', description: '', created_at: format(new Date(), 'yyyy-MM-dd') });
   };
 
   const handleEditClick = (p: any) => {
@@ -199,7 +200,8 @@ export default function PurchaseReport() {
       supplier_name: p.supplier_name || '',
       total_amount: p.total_amount.toString(),
       invoice_number: p.invoice_number || '',
-      description: p.description || ''
+      description: p.description || '',
+      created_at: p.created_at ? format(new Date(p.created_at), 'yyyy-MM-dd') : format(new Date(), 'yyyy-MM-dd')
     });
   };
 
@@ -336,16 +338,33 @@ export default function PurchaseReport() {
                   </DialogHeader>
                   <form onSubmit={(e) => {
                       e.preventDefault();
+                      
+                      let finalCreatedAt = new Date().toISOString();
+                      if (editingPurchase && formData.created_at === format(new Date(editingPurchase.created_at), 'yyyy-MM-dd')) {
+                          finalCreatedAt = editingPurchase.created_at;
+                      } else if (formData.created_at) {
+                          const timePart = editingPurchase ? format(new Date(editingPurchase.created_at), 'HH:mm:ss') : format(new Date(), 'HH:mm:ss');
+                          const localDate = new Date(`${formData.created_at}T${timePart}`);
+                          finalCreatedAt = isNaN(localDate.getTime()) ? new Date().toISOString() : localDate.toISOString();
+                      }
+
                       mutation.mutate({
                           supplier_name: formData.supplier_name,
                           total_amount: parseFloat(formData.total_amount),
                           invoice_number: formData.invoice_number,
-                          description: formData.description
+                          description: formData.description,
+                          created_at: finalCreatedAt
                       });
                   }} className="p-6 space-y-4">
-                      <div className="space-y-2">
-                          <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Supplier</Label>
-                          <Input value={formData.supplier_name} onChange={(e) => setFormData({...formData, supplier_name: e.target.value})} placeholder="Nama Supplier" required className="rounded-2xl bg-secondary/50 h-12" />
+                      <div className="grid grid-cols-2 gap-4">
+                          <div className="space-y-2">
+                              <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Tanggal</Label>
+                              <Input type="date" value={formData.created_at} onChange={(e) => setFormData({...formData, created_at: e.target.value})} required className="rounded-2xl bg-secondary/50 h-12" />
+                          </div>
+                          <div className="space-y-2">
+                              <Label className="text-xs font-black uppercase tracking-widest text-muted-foreground">Supplier</Label>
+                              <Input value={formData.supplier_name} onChange={(e) => setFormData({...formData, supplier_name: e.target.value})} placeholder="Nama Supplier" required className="rounded-2xl bg-secondary/50 h-12" />
+                          </div>
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                           <div className="space-y-2">
